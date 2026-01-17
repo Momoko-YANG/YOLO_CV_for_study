@@ -1,53 +1,53 @@
-# 基于深度学习的手势识别系统
+# Deep Learning Based Gesture Recognition System
 
-> ⚠️ **声明**：这是一个**个人学习项目**，仅用于学习和研究 YOLO 目标检测算法在手势识别领域的应用。代码和文档仅供参考学习，不建议用于生产环境。
+> ⚠️ **Disclaimer**: This is a **personal learning project**, intended only for learning and researching the application of YOLO object detection algorithms in gesture recognition. The code and documentation are for reference only and not recommended for production use.
 
-一个基于YOLOv5/YOLOv8模型构建的实时手势识别系统，具有用户友好的图形界面。该系统能够从图像、视频和实时摄像头输入中识别手势。
+A real-time gesture recognition system built on YOLOv5/YOLOv8 models with a user-friendly graphical interface. The system can recognize gestures from images, videos, and real-time camera input.
 
-## 项目概述
+## Project Overview
 
-本项目旨在探索深度学习在计算机视觉领域的应用，特别是YOLO模型框架在手势识别任务中的实现。系统采用模块化设计，结合Python语言和GUI界面技术，实现了从读取-识别-展示的一站式手势识别应用架构。
+This project aims to explore the application of deep learning in computer vision, particularly the implementation of YOLO model framework for gesture recognition tasks. The system adopts a modular design, combining Python and GUI interface technology to achieve a one-stop gesture recognition application architecture.
 
-### 学习目标
-- 理解 YOLO 系列目标检测算法的原理和实现
-- 掌握 PyTorch 深度学习框架的使用
-- 学习使用 PySide6 构建桌面 GUI 应用
-- 了解计算机视觉在实际场景中的应用
+### Learning Objectives
+- Understand the principles and implementation of YOLO series object detection algorithms
+- Master the use of PyTorch deep learning framework
+- Learn to build desktop GUI applications using PySide6
+- Understand the application of computer vision in real-world scenarios
 
-## 功能特性
+## Features
 
-### 核心功能
-- **多模型支持**：同时支持YOLOv5n和YOLOv8模型，支持实时模型切换
-- **多输入源支持**：
-  - 静态图像识别
-  - 视频文件处理  
-  - 实时摄像头检测
-- **手势类别识别**：识别三种主要手势类型
-  - Stop（停止手势-张开手掌）
-  - NumberTwo（数字二-胜利手势）
-  - Understand（理解手势-握拳）
+### Core Features
+- **Multi-model Support**: Supports both YOLOv5n and YOLOv8 models with real-time model switching
+- **Multiple Input Sources**:
+  - Static image recognition
+  - Video file processing  
+  - Real-time camera detection
+- **Gesture Category Recognition**: Recognizes three main gesture types
+  - Stop (open palm)
+  - NumberTwo (victory gesture)
+  - Understand (fist)
 
-### 系统特性
-- **实时性能**：检测时间约0.03秒，支持30 FPS处理
-- **交互式GUI**：基于PySide6构建的直观用户界面
-- **用户管理**：基于SQLite的登录/注册系统
-- **结果记录**：全面的检测结果记录，包含置信度分数和时间戳
-- **热力图可视化**：模型注意力区域的可视化展示
-- **参数调节**：实时调整置信度和IOU阈值
+### System Features
+- **Real-time Performance**: Detection time ~0.03 seconds, supports 30 FPS processing
+- **Interactive GUI**: Intuitive user interface built with PySide6
+- **User Management**: SQLite-based login/registration system
+- **Result Logging**: Comprehensive detection result recording with confidence scores and timestamps
+- **Heatmap Visualization**: Visualization of model attention regions
+- **Parameter Adjustment**: Real-time adjustment of confidence and IOU thresholds
 
-## 系统要求
+## System Requirements
 
-### 硬件环境
-- **处理器**：Intel Core i9-13900HX 或同等性能
-- **显卡**：NVIDIA GeForce RTX 4060 或更高（推荐8GB显存）
-- **内存**：最少16GB
-- **摄像头**：0.9MP或更高分辨率（用于实时检测）
+### Hardware Requirements
+- **Processor**: Intel Core i9-13900HX or equivalent
+- **GPU**: NVIDIA GeForce RTX 4060 or higher (8GB VRAM recommended)
+- **Memory**: Minimum 16GB
+- **Camera**: 0.9MP or higher resolution (for real-time detection)
 
-### 软件环境
-- **操作系统**：Windows 10/11 (64位)
-- **Python版本**：3.10.14 或更高版本
+### Software Requirements
+- **Operating System**: Windows 10/11 (64-bit)
+- **Python Version**: 3.10.14 or higher
 
-## 依赖库
+## Dependencies
 
 ```txt
 torch==2.0.1
@@ -61,262 +61,258 @@ matplotlib
 sqlite3
 ```
 
-## 安装说明
+## Installation
 
-### 1. 克隆项目
+### 1. Clone the Project
 ```bash
 git clone <repository-url>
 cd gesture-recognition-system
 ```
 
-### 2. 创建虚拟环境
+### 2. Create Virtual Environment
 ```bash
 python -m venv venv
-# Windows系统
+# Windows
 venv\Scripts\activate
-# Linux/Mac系统
+# Linux/Mac
 source venv/bin/activate
 ```
 
-### 3. 安装依赖
+### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. 下载预训练模型
-- 将YOLOv5n模型权重文件放置在 `models/yolov5n.pt`
-- 将YOLOv8模型权重文件放置在 `models/yolov8.pt`
+### 4. Download Pre-trained Models
+- Place YOLOv5n model weights in `weights/yolov5n.pt`
+- Place YOLOv8 model weights in `weights/yolov8.pt`
 
-### 5. 运行应用程序
+### 5. Run the Application
 ```bash
-python main.py
+python scripts/run_main_login.py
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 gesture-recognition-system/
-├── .idea/                          # PyCharm IDE配置文件
-├── __pycache__/                    # Python字节码缓存
-├── datasets/                       # 数据集目录
-│   └── (手势数据集存放)
-├── icons/                          # 图标资源文件
-├── runs/                           # 训练运行结果
-│   └── (模型训练输出、检测结果)
-├── test_media/                     # 测试媒体文件
-│   └── (测试用图片、视频)
-├── themes/                         # UI主题样式文件
-├── ultralytics/                    # Ultralytics YOLO核心库
-├── weights/                        # 模型权重文件
-│   └── (预训练模型、训练后的权重)
+├── datasets/                       # Dataset directory
+│   └── (gesture datasets)
+├── icons/                          # Icon resources
+├── runs/                           # Training results
+│   └── (model training outputs)
+├── test_media/                     # Test media files
+│   └── (test images, videos)
+├── themes/                         # UI theme styles
+├── ultralytics/                    # Ultralytics YOLO core library
+├── weights/                        # Model weight files
+│   └── (pretrained models)
 │
-├── __init__.py                     # Python包初始化文件
-├── LoginForm.ui                    # 登录界面UI设计文件 (24.9 KB)
-├── LoginForm.py                    # 登录界面Python实现 (20.9 KB)
-├── LoginWindow.py                  # 登录窗口逻辑 (16.3 KB)
-├── Recognition_UI.ui               # 识别系统UI设计文件 (79.6 KB)
-├── Recognition_UI.py               # 识别系统界面实现 (55.1 KB)
-├── Recognition_UI_ui.py            # UI编译后的Python代码 (55.1 KB)
-├── RecSystem.qrc                   # Qt资源文件 (1.51 KB)
-├── RecSystem.py                    # 主系统模块 (27.4 MB)
-├── RecSystem_rc.py                 # 资源编译文件 (7.79 MB)
-├── System_login.py                 # 带登录的系统主程序 (8.16 KB)
-├── System_noLogin.py               # 无登录的系统主程序 (30.9 KB)
-├── YOLOv8v5Model.py                # YOLO模型封装类 (4.49 KB)
+├── src/                            # Source code
+│   ├── LoginForm.py / .ui          # Login form
+│   ├── LoginWindow.py              # Login window logic
+│   ├── Recognition_UI.py / .ui     # Recognition system UI
+│   ├── Recognition_UI_ui.py        # Compiled UI code
+│   ├── RecSystem.py / .qrc         # Main system module
+│   ├── RecSystem_rc.py             # Resource compiled file
+│   ├── System_login.py             # Main program with login
+│   ├── System_noLogin.py           # Main program without login
+│   └── YOLOv8v5Model.py            # YOLO model wrapper
 │
-├── run_main_login.py               # 启动入口(带登录) (1.07 KB)
-├── run_main_noLogin.py             # 启动入口(无登录) (991 B)
-├── run_test_camera.py              # 摄像头测试脚本 (3.63 KB)
-├── run_test_image.py               # 图片测试脚本 (3.58 KB)
-├── run_test_video.py               # 视频测试脚本 (3.86 KB)
-├── run_train_model.py              # 模型训练脚本 (2.24 KB)
+├── scripts/                        # Run and test scripts
+│   ├── run_main_login.py           # Entry point (with login)
+│   ├── run_main_noLogin.py         # Entry point (without login)
+│   ├── run_test_camera.py          # Camera test script
+│   ├── run_test_image.py           # Image test script
+│   ├── run_test_video.py           # Video test script
+│   ├── run_train_model.py          # Model training script
+│   └── test.py                     # Test script
 │
-├── UserDatabase.db                 # 用户数据库文件 (12.0 KB)
-├── requirements.txt                # 项目依赖列表 (1.22 KB)
-├── environment.txt                 # 环境配置说明 (401 B)
-├── 环境配置.txt                     # 环境配置说明(中文) (401 B)
-├── test.py                         # 测试脚本 (72 B)
+├── output_examples/                # Output examples
+│   ├── video_*.avi                 # Detection result video
+│   └── table_data_*.csv            # Detection data table
 │
-└── 输出示例/
-    ├── video_2024-06-03-23-34-27.avi      # 检测结果视频
-    └── table_data_2024-06-03-23-34-27.csv # 检测数据表格
+├── __init__.py                     # Python package init
+├── requirements.txt                # Project dependencies
+├── environment.txt                 # Environment setup guide
+└── README.md                       # Project documentation
 ```
 
-## 使用方法
+## Usage
 
-### 启动应用程序
-1. 运行 `python run_main_login.py`
-2. 注册新账户或使用现有凭据登录
-3. 选择检测模型（YOLOv5n或YOLOv8）
+### Starting the Application
+1. Run `python scripts/run_main_login.py`
+2. Register a new account or login with existing credentials
+3. Select detection model (YOLOv5n or YOLOv8)
 
-### 检测模式
+### Detection Modes
 
-#### 图像检测
-- 点击"加载图片"按钮
-- 选择图像文件（jpg、png等格式）
-- 查看带有边界框和置信度分数的检测结果
+#### Image Detection
+- Click "Load Image" button
+- Select image file (jpg, png, etc.)
+- View detection results with bounding boxes and confidence scores
 
-#### 视频检测
-- 点击"加载视频"按钮
-- 选择视频文件（mp4、avi等格式）
-- 逐帧处理并实时可视化
+#### Video Detection
+- Click "Load Video" button
+- Select video file (mp4, avi, etc.)
+- Frame-by-frame processing with real-time visualization
 
-#### 摄像头检测
-- 点击"启动摄像头"按钮
-- 执行实时手势识别
-- 根据需要调整CONF和IOU阈值
+#### Camera Detection
+- Click "Start Camera" button
+- Perform real-time gesture recognition
+- Adjust CONF and IOU thresholds as needed
 
-## 模型性能
+## Model Performance
 
-| 模型 | 精确率 | 召回率 | mAP@0.5 | 检测速度 |
-|------|--------|--------|---------|----------|
-| YOLOv8 | 95%+ | 95%+ | 0.963 | ~0.03秒 |
-| YOLOv5n | 94%+ | 93%+ | 0.940 | ~0.03秒 |
+| Model | Precision | Recall | mAP@0.5 | Detection Speed |
+|-------|-----------|--------|---------|-----------------|
+| YOLOv8 | 95%+ | 95%+ | 0.963 | ~0.03s |
+| YOLOv5n | 94%+ | 93%+ | 0.940 | ~0.03s |
 
-### 训练结果分析
-- **损失函数收敛**：边界框损失、分类损失和目标损失均稳定收敛
-- **PR曲线表现**：mAP@0.5达到0.963，显示出色的检测性能
-- **混淆矩阵**：各类别识别准确率均在95%左右
+### Training Results Analysis
+- **Loss Convergence**: Box loss, classification loss, and object loss all converge stably
+- **PR Curve Performance**: mAP@0.5 reaches 0.963, showing excellent detection performance
+- **Confusion Matrix**: Recognition accuracy for all categories is around 95%
 
-## 数据集信息
+## Dataset Information
 
-- **数据来源**：基于HaGRID开源数据集
-- **图像总数**：11,886张
-  - 训练集：10,953张图像
-  - 验证集：604张图像
-  - 测试集：329张图像
-- **图像分辨率**：640×640像素
-- **类别分布**：3个手势类别，分布均衡
+- **Data Source**: Based on HaGRID open-source dataset
+- **Total Images**: 11,886
+  - Training set: 10,953 images
+  - Validation set: 604 images
+  - Test set: 329 images
+- **Image Resolution**: 640×640 pixels
+- **Class Distribution**: 3 gesture categories, evenly distributed
 
-### 数据预处理
-- 自动方向校正，去除EXIF方向信息
-- 统一图像尺寸为640×640像素
-- 数据增强：包括马赛克增强、旋转、缩放等
+### Data Preprocessing
+- Automatic orientation correction, removing EXIF orientation info
+- Unified image size to 640×640 pixels
+- Data augmentation: mosaic augmentation, rotation, scaling, etc.
 
-## 配置说明
+## Configuration
 
-### 可调节参数
-- **CONF阈值**：检测的最小置信度分数（默认：0.5）
-- **IOU阈值**：非极大值抑制阈值（默认：0.5）
-- **帧率**：视频/摄像头输入的处理速度（锁定为30 FPS）
+### Adjustable Parameters
+- **CONF Threshold**: Minimum confidence score for detection (default: 0.5)
+- **IOU Threshold**: Non-maximum suppression threshold (default: 0.5)
+- **Frame Rate**: Processing speed for video/camera input (locked at 30 FPS)
 
-### 模型切换
-- 支持YOLOv5n和YOLOv8之间的实时模型切换
-- 支持上传自定义训练权重文件
+### Model Switching
+- Supports real-time switching between YOLOv5n and YOLOv8
+- Supports uploading custom trained weight files
 
-## 系统界面
+## System Interface
 
-### 登录注册页面
-- SQLite数据库存储用户信息
-- 支持用户注册、登录和密码修改
-- 验证码机制防止恶意注册
+### Login/Registration Page
+- SQLite database stores user information
+- Supports user registration, login, and password modification
+- CAPTCHA mechanism to prevent malicious registration
 
-### 主程序界面
-- 左侧控制面板：输入源选择、模型切换
-- 右侧显示区域：原图预览、热力图显示
-- 下方数据表格：检测结果记录和统计
-- 顶部参数调节：实时调整CONF和IOU阈值
+### Main Interface
+- Left control panel: Input source selection, model switching
+- Right display area: Original image preview, heatmap display
+- Bottom data table: Detection result recording and statistics
+- Top parameter adjustment: Real-time CONF and IOU threshold adjustment
 
-## 结果与日志
+## Results and Logging
 
-系统提供全面的日志记录功能：
-- 检测时间戳
-- 置信度分数
-- 边界框坐标
-- 手势分类结果
-- 支持结果导出用于分析
+The system provides comprehensive logging functionality:
+- Detection timestamps
+- Confidence scores
+- Bounding box coordinates
+- Gesture classification results
+- Support for result export for analysis
 
-## 技术细节
+## Technical Details
 
-### 系统架构
-- **检测框架**：YOLO（You Only Look Once）
-- **深度学习库**：PyTorch 2.0.1
-- **计算机视觉**：OpenCV 4.7.0.72
-- **GUI框架**：PySide6
-- **数据库**：SQLite3
+### System Architecture
+- **Detection Framework**: YOLO (You Only Look Once)
+- **Deep Learning Library**: PyTorch 2.0.1
+- **Computer Vision**: OpenCV 4.7.0.72
+- **GUI Framework**: PySide6
+- **Database**: SQLite3
 
-### 训练配置
-- **优化器**：AdamW
-- **学习率**：动态学习率，包含预热阶段
-- **批次大小**：根据硬件自适应
-- **数据增强**：马赛克、旋转、缩放等
-- **损失函数**：多组件损失（边界框、目标性、分类）
+### Training Configuration
+- **Optimizer**: AdamW
+- **Learning Rate**: Dynamic learning rate with warmup phase
+- **Batch Size**: Hardware-adaptive
+- **Data Augmentation**: Mosaic, rotation, scaling, etc.
+- **Loss Function**: Multi-component loss (box, objectness, classification)
 
-### 核心算法
-#### YOLO检测流程
-1. 图像预处理：尺寸调整、归一化
-2. 特征提取：CNN骨干网络
-3. 目标检测：回归边界框和分类概率
-4. 后处理：非极大值抑制（NMS）
+### Core Algorithms
+#### YOLO Detection Pipeline
+1. Image preprocessing: resize, normalization
+2. Feature extraction: CNN backbone network
+3. Object detection: Regression of bounding boxes and classification probabilities
+4. Post-processing: Non-maximum suppression (NMS)
 
-#### 手势识别流程
-1. 输入源读取（图像/视频/摄像头）
-2. 数据预处理
-3. 模型推理
-4. 结果后处理
-5. 可视化显示
+#### Gesture Recognition Pipeline
+1. Input source reading (image/video/camera)
+2. Data preprocessing
+3. Model inference
+4. Result post-processing
+5. Visualization display
 
-## 已知限制
+## Known Limitations
 
-- 在不同光照条件下性能可能有所差异
-- 识别精度依赖于手部可见度和手势清晰度
-- 当前实现限制为三种手势类别
-- 复杂背景可能影响检测精度
+- Performance may vary under different lighting conditions
+- Recognition accuracy depends on hand visibility and gesture clarity
+- Current implementation limited to three gesture categories
+- Complex backgrounds may affect detection accuracy
 
-## 未来改进方向
+## Future Improvements
 
-### 功能扩展
-- **更多手势类别**：扩展支持更多种类的手势识别
-- **跨文化适应**：研究不同文化背景下的手势差异
-- **移动端部署**：优化模型以支持移动设备部署
-- **多模态输入**：集成语音、文本等其他信息模态
+### Feature Extensions
+- **More Gesture Categories**: Extend support for more gesture types
+- **Cross-cultural Adaptation**: Research gesture differences across cultures
+- **Mobile Deployment**: Optimize models for mobile device deployment
+- **Multi-modal Input**: Integrate voice, text, and other information modalities
 
-### 技术优化
-- **模型轻量化**：基于神经网络架构搜索（NAS）技术优化模型
-- **实时性提升**：进一步优化推理速度
-- **鲁棒性增强**：提高在复杂环境下的识别稳定性
+### Technical Optimization
+- **Model Lightweighting**: Optimize models based on Neural Architecture Search (NAS)
+- **Real-time Enhancement**: Further optimize inference speed
+- **Robustness Enhancement**: Improve recognition stability in complex environments
 
-## 许可证
+## License
 
-本项目仅供个人学习使用，请勿用于商业用途。
+This project is for personal learning use only. Please do not use for commercial purposes.
 
-## 致谢
+## Acknowledgments
 
-- **数据集**：[HaGRID](https://github.com/hukenovs/hagrid) 开源手势数据集
-- **技术框架**：[Ultralytics YOLO](https://github.com/ultralytics/ultralytics)、PyTorch、OpenCV 开源社区
+- **Dataset**: [HaGRID](https://github.com/hukenovs/hagrid) Open-source Gesture Dataset
+- **Technical Framework**: [Ultralytics YOLO](https://github.com/ultralytics/ultralytics), PyTorch, OpenCV Open Source Community
 
 ---
 
-**注意**：本项目为个人学习项目，代码质量和性能可能存在不足，仅供参考学习。
+**Note**: This is a personal learning project. Code quality and performance may have limitations and is for reference only.
 
-## 附录
+## Appendix
 
-### 常见问题解决
+### Troubleshooting
 
-**Q: 模型加载失败**
-A: 检查模型文件路径是否正确，确保模型文件完整
+**Q: Model loading failed**
+A: Check if the model file path is correct and ensure the model file is complete
 
-**Q: 摄像头无法启动**  
-A: 检查摄像头权限设置，确保摄像头未被其他程序占用
+**Q: Camera won't start**  
+A: Check camera permission settings and ensure the camera is not occupied by other programs
 
-**Q: 检测精度不理想**
-A: 调整CONF和IOU阈值，确保光照条件良好
+**Q: Detection accuracy is poor**
+A: Adjust CONF and IOU thresholds, ensure good lighting conditions
 
-**Q: 系统运行缓慢**
-A: 检查GPU驱动是否正确安装，考虑使用更轻量的模型
+**Q: System runs slowly**
+A: Check if GPU drivers are correctly installed, consider using a lighter model
 
-### 系统性能优化建议
+### Performance Optimization Tips
 
-1. **硬件优化**：使用支持CUDA的NVIDIA显卡
-2. **环境配置**：确保PyTorch正确识别GPU
-3. **参数调优**：根据实际需求调整模型参数
-4. **内存管理**：及时清理不用的变量和缓存
+1. **Hardware Optimization**: Use CUDA-supported NVIDIA GPU
+2. **Environment Configuration**: Ensure PyTorch correctly recognizes GPU
+3. **Parameter Tuning**: Adjust model parameters according to actual needs
+4. **Memory Management**: Clean up unused variables and cache promptly
 
-### 扩展开发指南
+### Extension Development Guide
 
-本系统采用模块化设计，便于功能扩展：
+This system adopts modular design for easy feature extension:
 
-- **新增手势类别**：修改数据集和模型训练配置
-- **界面定制**：基于PySide6框架进行UI设计
-- **算法替换**：实现YOLOv8v5Detector接口即可集成新算法
-- **数据库扩展**：基于SQLite可扩展更多用户功能
+- **Add Gesture Categories**: Modify dataset and model training configuration
+- **Interface Customization**: UI design based on PySide6 framework
+- **Algorithm Replacement**: Implement YOLOv8v5Detector interface to integrate new algorithms
+- **Database Extension**: Extend more user features based on SQLite

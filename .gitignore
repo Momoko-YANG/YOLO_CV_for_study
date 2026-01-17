@@ -1,33 +1,30 @@
-# 数据集 - 太大无法推送
+# Dataset - too large to push
 datasets/
 
-# 模型权重文件
+# Model weight files
 weights/*.pt
 
-# 训练输出结果
+# Training output results
 runs/
 
-# Python 缓存
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
 
-# IDE 配置
+# IDE configuration
 .idea/
 
-# 数据库文件
+# Database files
 *.db
 
-# 视频输出
+# Video output
 *.avi
 *.mp4
 
-# 缓存文件
+# Cache files
 *.cache
 
-# 大型资源文件（含嵌入的图片资源，太大无法推送）
+# Large resource files (contains embedded image resources, too large to push)
 src/RecSystem.py
 src/RecSystem_rc.py
-
-# .idea 配置目录
-.idea/
