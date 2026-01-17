@@ -1,0 +1,33 @@
+# 数据集 - 太大无法推送
+datasets/
+
+# 模型权重文件
+weights/*.pt
+
+# 训练输出结果
+runs/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE 配置
+.idea/
+
+# 数据库文件
+*.db
+
+# 视频输出
+*.avi
+*.mp4
+
+# 缓存文件
+*.cache
+
+# 大型资源文件（含嵌入的图片资源，太大无法推送）
+RecSystem.py
+RecSystem_rc.py
+
+# .idea 配置目录
+.idea/
