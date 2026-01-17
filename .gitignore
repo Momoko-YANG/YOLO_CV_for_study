@@ -26,8 +26,8 @@ __pycache__/
 *.cache
 
 # 大型资源文件（含嵌入的图片资源，太大无法推送）
-RecSystem.py
-RecSystem_rc.py
+src/RecSystem.py
+src/RecSystem_rc.py
 
 # .idea 配置目录
 .idea/
