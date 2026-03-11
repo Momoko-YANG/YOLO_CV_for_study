@@ -12,7 +12,7 @@ from backend.app.models.user import (
     LoginRequest, RegisterRequest,
     ChangePasswordRequest, ChangeAvatarRequest, UserResponse,
 )
-from backend.app import services.user_service as svc
+from backend.app.services import user_service as svc
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
