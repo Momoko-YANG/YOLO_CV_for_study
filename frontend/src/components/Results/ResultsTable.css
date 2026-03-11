@@ -1,0 +1,11 @@
+.results-table-wrap { font-size: 13px; }
+.infer-time { color: #888; margin-bottom: 6px; }
+.results-table { width: 100%; border-collapse: collapse; }
+.results-table th, .results-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+.results-table th { background: #f0f4ff; font-weight: 600; color: #4796f0; }
+.results-table tr:hover td { background: #f7f8ff; }
+.empty { text-align: center; color: #aaa; padding: 20px; }

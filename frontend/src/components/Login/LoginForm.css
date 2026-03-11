@@ -1,0 +1,99 @@
+.login-card {
+  width: 400px;
+  margin: 10vh auto;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.15);
+  background: #fff;
+}
+
+.login-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.login-tabs button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-tabs button.active {
+  border-bottom-color: #4796f0;
+  color: #4796f0;
+  font-weight: 600;
+}
+
+.login-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-fields input {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.login-fields input:focus {
+  border-color: #4796f0;
+}
+
+.btn-primary {
+  padding: 12px;
+  background: #9fa8da;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.btn-primary:hover { background: #4996ed; }
+
+.captcha-row {
+  display: flex;
+  gap: 8px;
+}
+
+.captcha-row input { flex: 1; }
+
+.captcha-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  border-radius: 8px;
+  background: #f0f4ff;
+  letter-spacing: 4px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #4796f0;
+  user-select: none;
+}
+
+.avatar-pick {
+  padding: 10px 14px;
+  border: 1px dashed #aaa;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #888;
+  text-align: center;
+}
+
+.login-info {
+  margin-top: 8px;
+  color: #e00;
+  font-size: 13px;
+  text-align: center;
+}
