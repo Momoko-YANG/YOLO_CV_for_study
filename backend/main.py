@@ -5,9 +5,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from core.config import settings
-from core.database import init_db
-from services.yolo_service import YOLOService
+from core import init_db, settings
+from routers import auth_router, detection_router, ws_router
+from services import YOLOService
 
 
 @asynccontextmanager
@@ -40,11 +40,6 @@ app.add_middleware(
 for d in [settings.upload_dir, settings.export_dir, settings.avatar_dir]:
     os.makedirs(d, exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Routers
-from routers.auth import router as auth_router
-from routers.detection import router as detection_router
-from routers.websocket import router as ws_router
 
 app.include_router(auth_router)
 app.include_router(detection_router)

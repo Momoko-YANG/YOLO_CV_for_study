@@ -9,22 +9,50 @@ import numpy as np
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
-from core.config import settings
-from core.dependencies import get_current_user
-from models.schemas import (
+from core import get_current_user, settings
+from models import (
     DetectionResult,
     ImageDetectionResponse,
+    ModelInfo,
+    ModelListResponse,
+    ModelSelectRequest,
+    User,
     VideoStatusResponse,
     VideoTaskResponse,
 )
-from models.user import User
-from services.export_service import save_annotated_image, save_results_csv
-from services.yolo_service import YOLOService
+from services import YOLOService, save_annotated_image, save_results_csv
 
 router = APIRouter(prefix="/api/detect", tags=["detection"])
 
 # In-memory video task storage
 video_tasks: Dict[str, dict] = {}
+
+
+def _get_model_dir() -> str:
+    model_dir = os.path.dirname(settings.model_path) or "weights"
+    os.makedirs(model_dir, exist_ok=True)
+    return model_dir
+
+
+def _list_model_files() -> List[ModelInfo]:
+    yolo = YOLOService.get_instance()
+    model_dir = _get_model_dir()
+    current_path = os.path.abspath(yolo.model_path) if yolo.model_path else ""
+    models: List[ModelInfo] = []
+
+    for name in sorted(os.listdir(model_dir)):
+        if not name.endswith(".pt"):
+            continue
+        path = os.path.join(model_dir, name)
+        models.append(
+            ModelInfo(
+                name=name,
+                path=path.replace("\\", "/"),
+                is_current=os.path.abspath(path) == current_path,
+            )
+        )
+
+    return models
 
 
 @router.post("/image", response_model=ImageDetectionResponse)
@@ -152,6 +180,38 @@ async def get_model_classes():
     return {"classes": yolo.get_class_names()}
 
 
+@router.get("/model/list", response_model=ModelListResponse)
+async def list_models(
+    _user: User = Depends(get_current_user),
+):
+    yolo = YOLOService.get_instance()
+    return ModelListResponse(
+        current_model=yolo.get_current_model_name() or None,
+        models=_list_model_files(),
+    )
+
+
+@router.post("/model/select")
+async def select_model(
+    data: ModelSelectRequest,
+    _user: User = Depends(get_current_user),
+):
+    model_dir = _get_model_dir()
+    model_path = os.path.join(model_dir, os.path.basename(data.name))
+    if not os.path.isfile(model_path) or not model_path.endswith(".pt"):
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    yolo = YOLOService.get_instance()
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, lambda: yolo.load_model(model_path))
+
+    return {
+        "message": "Model selected",
+        "current_model": yolo.get_current_model_name(),
+        "classes": yolo.get_class_names(),
+    }
+
+
 @router.post("/model/upload")
 async def upload_model(
     file: UploadFile = File(...),
@@ -160,8 +220,8 @@ async def upload_model(
     if not file.filename or not file.filename.endswith(".pt"):
         raise HTTPException(status_code=400, detail="Only .pt model files are accepted")
 
-    os.makedirs("weights", exist_ok=True)
-    model_path = os.path.join("weights", file.filename)
+    model_dir = _get_model_dir()
+    model_path = os.path.join(model_dir, os.path.basename(file.filename))
     contents = await file.read()
     with open(model_path, "wb") as f:
         f.write(contents)
@@ -170,7 +230,12 @@ async def upload_model(
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, lambda: yolo.load_model(model_path))
 
-    return {"message": "Model loaded", "classes": yolo.get_class_names()}
+    return {
+        "message": "Model loaded",
+        "current_model": yolo.get_current_model_name(),
+        "classes": yolo.get_class_names(),
+        "models": [model.model_dump() for model in _list_model_files()],
+    }
 
 
 # --- Export ---

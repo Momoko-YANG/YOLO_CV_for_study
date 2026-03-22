@@ -31,3 +31,14 @@ export interface VideoResults {
   total_frames: number;
   frames: DetectionResult[][];
 }
+
+export interface ModelInfo {
+  name: string;
+  path: string;
+  is_current: boolean;
+}
+
+export interface ModelListResponse {
+  current_model: string | null;
+  models: ModelInfo[];
+}

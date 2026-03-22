@@ -6,8 +6,8 @@ from typing import List
 import cv2
 import numpy as np
 
-from core.config import settings
-from models.schemas import DetectionResult
+from core import settings
+from models import DetectionResult
 
 
 def save_annotated_image(image: np.ndarray, detections: List[DetectionResult]) -> str:

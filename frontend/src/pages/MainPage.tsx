@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Sidebar from '../components/layout/Sidebar'
 import TitleBar from '../components/layout/TitleBar'
 import DetectionCanvas from '../components/detection/DetectionCanvas'
@@ -11,14 +12,19 @@ import { useWebSocket } from '../hooks/useWebSocket'
 import { useDetectionStore } from '../hooks/useDetection'
 import { useAuthStore } from '../hooks/useAuth'
 import api from '../services/api'
-import type { ImageDetectionResponse } from '../types/detection'
+import type { ImageDetectionResponse, ModelInfo, ModelListResponse } from '../types/detection'
 
 export default function MainPage() {
+  const { t } = useTranslation()
   const token = useAuthStore((s) => s.token)
   const camera = useCamera()
   const ws = useWebSocket(token)
   const store = useDetectionStore()
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [models, setModels] = useState<ModelInfo[]>([])
+  const [showModelDialog, setShowModelDialog] = useState(false)
+  const [modelLoading, setModelLoading] = useState(false)
+  const [modelError, setModelError] = useState('')
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
@@ -157,7 +163,26 @@ export default function MainPage() {
   }, [camera, ws, store])
 
   // --- Model upload ---
-  const handleModel = useCallback(() => {
+  const loadModels = useCallback(async () => {
+    setModelLoading(true)
+    setModelError('')
+    try {
+      const res = await api.get<ModelListResponse>('/api/detect/model/list')
+      setModels(res.data.models)
+    } catch (err) {
+      console.error('Load models failed:', err)
+      setModelError(t('model_load_failed'))
+    } finally {
+      setModelLoading(false)
+    }
+  }, [t])
+
+  const handleModel = useCallback(async () => {
+    setShowModelDialog(true)
+    await loadModels()
+  }, [loadModels])
+
+  const handleChooseModelFile = useCallback(() => {
     modelInputRef.current?.click()
   }, [])
 
@@ -167,12 +192,32 @@ export default function MainPage() {
     const formData = new FormData()
     formData.append('file', file)
     try {
-      await api.post('/api/detect/model/upload', formData)
+      setModelLoading(true)
+      setModelError('')
+      const res = await api.post('/api/detect/model/upload', formData)
+      setModels(res.data.models ?? [])
     } catch (err) {
       console.error('Model upload failed:', err)
+      setModelError(t('model_upload_failed'))
+    } finally {
+      setModelLoading(false)
     }
     e.target.value = ''
-  }, [])
+  }, [t])
+
+  const handleSelectModel = useCallback(async (name: string) => {
+    try {
+      setModelLoading(true)
+      setModelError('')
+      await api.post('/api/detect/model/select', { name })
+      await loadModels()
+    } catch (err) {
+      console.error('Select model failed:', err)
+      setModelError(t('model_select_failed'))
+    } finally {
+      setModelLoading(false)
+    }
+  }, [loadModels, t])
 
   // --- Save/Export ---
   const handleSave = useCallback(async () => {
@@ -263,6 +308,74 @@ export default function MainPage() {
 
       {/* Hidden video element for camera */}
       <video ref={camera.videoRef} className="hidden" playsInline muted />
+
+      {showModelDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-emerald-100 bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-slate-800">{t('select_model')}</h2>
+              <button
+                onClick={() => setShowModelDialog(false)}
+                className="rounded-md px-2 py-1 text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="text-sm text-slate-500">{t('choose_model_prompt')}</p>
+              <button
+                onClick={handleChooseModelFile}
+                className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-600"
+              >
+                {t('upload_model')}
+              </button>
+            </div>
+
+            {modelError && (
+              <div className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                {modelError}
+              </div>
+            )}
+
+            <div className="max-h-80 space-y-2 overflow-y-auto">
+              {modelLoading && models.length === 0 && (
+                <div className="rounded-lg bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                  {t('processing')}
+                </div>
+              )}
+
+              {!modelLoading && models.length === 0 && (
+                <div className="rounded-lg bg-slate-50 px-3 py-4 text-sm text-slate-500">
+                  {t('no_models')}
+                </div>
+              )}
+
+              {models.map((model) => (
+                <button
+                  key={model.name}
+                  onClick={() => handleSelectModel(model.name)}
+                  disabled={modelLoading}
+                  className={`w-full rounded-xl border px-4 py-3 text-left transition-colors ${
+                    model.is_current
+                      ? 'border-emerald-300 bg-emerald-50'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="truncate text-sm font-medium text-slate-800">{model.name}</span>
+                    {model.is_current && (
+                      <span className="rounded-full bg-emerald-500 px-2 py-1 text-xs text-white">
+                        {t('current_model')}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

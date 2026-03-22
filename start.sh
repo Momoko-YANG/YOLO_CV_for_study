@@ -51,7 +51,8 @@ echo "[1/2] Starting FastAPI backend on port 8000..."
 cd "$BACKEND_DIR"
 
 # Keep backend imports scoped to backend/ so the vendored root ultralytics package does not shadow runtime dependencies.
-PYTHONPATH="$BACKEND_DIR" "$VENV_PYTHON" -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+# Use reload in local development so newly added routes and schema changes take effect without manual restarts.
+PYTHONPATH="$BACKEND_DIR" "$VENV_PYTHON" -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload &
 BACKEND_PID=$!
 echo "  Backend PID: $BACKEND_PID"
 

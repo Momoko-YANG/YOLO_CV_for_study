@@ -1,12 +1,13 @@
 import asyncio
+import os
 import time
 from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
 
-from core.config import settings
-from models.schemas import DetectionResult
+from core import settings
+from models import DetectionResult
 
 # Gesture label mapping
 GESTURE_LABELS = {
@@ -97,3 +98,6 @@ class YOLOService:
 
     def get_class_names(self) -> List[str]:
         return self.names.copy()
+
+    def get_current_model_name(self) -> str:
+        return os.path.basename(self.model_path) if self.model_path else ""

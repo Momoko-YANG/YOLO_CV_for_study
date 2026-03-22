@@ -5,9 +5,8 @@ import cv2
 import numpy as np
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 
-from core.config import settings
-from core.security import decode_access_token
-from services.yolo_service import YOLOService
+from core import decode_access_token, settings
+from services import YOLOService
 
 router = APIRouter()
 

@@ -73,3 +73,18 @@ class WebSocketMessage(BaseModel):
     detections: List[DetectionResult]
     inference_time: float
     frame_id: int
+
+
+class ModelInfo(BaseModel):
+    name: str
+    path: str
+    is_current: bool = False
+
+
+class ModelListResponse(BaseModel):
+    current_model: Optional[str] = None
+    models: List[ModelInfo]
+
+
+class ModelSelectRequest(BaseModel):
+    name: str
