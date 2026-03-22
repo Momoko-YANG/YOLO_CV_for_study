@@ -32,6 +32,9 @@
   "inference_time": "Inference Time",
   "total_count": "Total Count",
   "username": "Username",
+  "current_password": "Current Password",
+  "new_password": "New Password",
+  "confirm_password": "Confirm New Password",
   "password": "Password",
   "verification_code": "Verification Code",
   "login": "Login",
@@ -48,6 +51,7 @@
   "incomplete_info": "Incomplete information",
   "register_success": "Registration successful",
   "password_changed": "Password changed successfully",
+  "password_mismatch": "The new passwords do not match",
   "avatar_changed": "Avatar changed successfully",
   "account_deleted": "Account deleted successfully",
   "camera": "Camera",
@@ -63,6 +67,8 @@
   "export_csv": "Export CSV",
   "go_to_register": "Go to Register",
   "go_to_login": "Go to Login",
+  "cancel": "Cancel",
+  "update_password": "Update Password",
   "conf_threshold": "Confidence Threshold",
   "iou_threshold": "IOU Threshold"
 }

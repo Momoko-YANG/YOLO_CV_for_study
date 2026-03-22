@@ -1,48 +1,61 @@
-# Dataset - too large to push
-datasets/
-
-# Model weight files
-weights/*.pt
-
-# Training output results
-runs/
-
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
+# Operating system files
+.DS_Store
+Thumbs.db
 
 # IDE configuration
 .idea/
-
-# Database files
-*.db
-
-# Video output
-*.avi
-*.mp4
-
-# Cache files
-*.cache
-
-# Large resource files (contains embedded image resources, too large to push)
-src/RecSystem.py
-src/RecSystem_rc.py
-
-# Virtual environment
-venv/
-
-# Node modules
-node_modules/
-
-# Frontend build output
-frontend/dist/
-
-# Backend uploads and exports
-backend/static/
-
-# Backend model weights
-backend/weights/*.pt
+.vscode/
 
 # Claude worktrees
 .claude/
+
+# Python caches and tooling
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Python virtual environments
+venv/
+.venv/
+
+# Frontend dependencies and build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Datasets and training outputs
+datasets/
+runs/
+
+# Model weights
+weights/*.pt
+backend/weights/*.pt
+
+# Application runtime data
+*.db
+*.sqlite
+*.sqlite3
+backend/static/
+backend/uploads/
+backend/exports/
+
+# Generated media
+*.avi
+*.mp4
+*.mov
+
+# Generic cache and logs
+*.cache
+*.log

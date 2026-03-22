@@ -32,6 +32,9 @@
   "inference_time": "推論時間",
   "total_count": "検出数",
   "username": "ユーザー名",
+  "current_password": "現在のパスワード",
+  "new_password": "新しいパスワード",
+  "confirm_password": "新しいパスワードの確認",
   "password": "パスワード",
   "verification_code": "確認コード",
   "login": "ログイン",
@@ -48,6 +51,7 @@
   "incomplete_info": "情報が不完全です",
   "register_success": "登録に成功しました",
   "password_changed": "パスワードが変更されました",
+  "password_mismatch": "新しいパスワードが一致しません",
   "avatar_changed": "アバターが変更されました",
   "account_deleted": "アカウントが削除されました",
   "camera": "カメラ",
@@ -63,6 +67,8 @@
   "export_csv": "CSV出力",
   "go_to_register": "登録はこちら",
   "go_to_login": "ログインはこちら",
+  "cancel": "キャンセル",
+  "update_password": "パスワードを更新",
   "conf_threshold": "信頼度しきい値",
   "iou_threshold": "IOUしきい値"
 }

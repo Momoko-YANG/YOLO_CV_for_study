@@ -193,7 +193,7 @@ export default function MainPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-emerald-50/30">
-      <TitleBar onSave={handleSave} />
+      <TitleBar onSave={handleSave} canExport={Boolean(store.videoTaskId)} />
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar

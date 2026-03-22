@@ -2,9 +2,10 @@ import { useTranslation } from 'react-i18next'
 
 interface TitleBarProps {
   onSave: () => void
+  canExport: boolean
 }
 
-export default function TitleBar({ onSave }: TitleBarProps) {
+export default function TitleBar({ onSave, canExport }: TitleBarProps) {
   const { t, i18n } = useTranslation()
 
   const toggleLang = () => {
@@ -26,9 +27,10 @@ export default function TitleBar({ onSave }: TitleBarProps) {
       </button>
       <button
         onClick={onSave}
-        className="px-3 py-1 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600 transition-colors font-medium shadow-sm"
+        disabled={!canExport}
+        className="px-3 py-1 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600 transition-colors font-medium shadow-sm disabled:cursor-not-allowed disabled:bg-emerald-200 disabled:text-white/80"
       >
-        {t('save')}
+        {t('export_csv')}
       </button>
     </div>
   )

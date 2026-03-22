@@ -1,28 +1,32 @@
 # Deep Learning Based Gesture Recognition System
 
-> **Disclaimer**: This is a **personal learning project**, intended only for learning and researching the application of YOLO object detection algorithms in gesture recognition.
+> Personal learning project for gesture recognition with YOLO models.
 
-A real-time gesture recognition system built on YOLOv8/v5 models. The system recognizes gestures from images, videos, and real-time camera input through a web-based interface.
+当前仓库只保留 Web 版手势识别系统。
 
-## Architecture
+## Current Focus
 
-The project uses a **frontend-backend separation** architecture:
+Web 版采用前后端分离架构：
 
-- **Backend**: FastAPI (Python) — YOLO model inference, user auth, file processing
-- **Frontend**: React + TypeScript + Tailwind CSS — detection visualization, camera capture
-- **Real-time**: WebSocket — camera frames streamed as binary JPEG, detection results returned as JSON
-- **Database**: SQLite (via SQLAlchemy async)
-- **Auth**: JWT (bcrypt password hashing)
-- **i18n**: Japanese / English bilingual interface
+- Backend: FastAPI，负责鉴权、YOLO 推理、导出与 WebSocket
+- Frontend: React + TypeScript + Vite，负责登录、检测界面和实时相机流
+- Realtime: WebSocket 传输 JPEG 帧与检测结果
+- Database: SQLite + SQLAlchemy async
 
-## Features
+## Repository Layout
 
-- **Multi-model Support**: YOLOv5n and YOLOv8 with runtime model switching
-- **Multiple Input Sources**: Camera (real-time WebSocket), image upload, video upload, folder batch
-- **3 Gesture Classes**: Stop (停止), Understand (了解), Number Two (数字2)
-- **Interactive UI**: Collapsible sidebar, confidence/IOU sliders, detection canvas with bounding box overlays, results table
-- **User Management**: Registration, login, avatar upload (JWT-based)
-- **Export**: Download annotated images, video results as CSV
+```text
+.
+├── backend/        FastAPI backend
+├── frontend/       React + TypeScript frontend
+├── scripts/        Small helper scripts
+├── datasets/       Local training data, ignored by git
+├── test_media/     Test images and videos
+├── weights/        Local model weights, ignored by git
+├── ultralytics/    Vendored YOLO-related code kept in-repo
+├── start.sh        Start backend + frontend together
+└── Makefile        Common local development commands
+```
 
 ## Quick Start
 
@@ -30,171 +34,88 @@ The project uses a **frontend-backend separation** architecture:
 
 - Python 3.9+
 - Node.js 18+
-- Model weights in `backend/weights/best-yolov8n.pt`
+- A local virtualenv at `./venv`
+- Model weights under `backend/weights/`
 
-### One-command Start
+### Initial Setup
+
+```bash
+python3 -m venv venv
+./venv/bin/pip install -r backend/requirements.txt
+cd frontend && npm install
+```
+
+### Start Everything
 
 ```bash
 ./start.sh
 ```
 
-This starts both the backend (port 8000) and frontend (port 5173), then open `http://localhost:5173`.
-
-### Manual Start
-
-**Terminal 1 — Backend:**
-```bash
-cd backend
-PYTHONPATH="$(pwd)" ../venv/bin/python3 -m uvicorn main:app --port 8000
-```
-
-**Terminal 2 — Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Then open `http://localhost:5173`.
-
-### First-time Setup
+或者：
 
 ```bash
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install backend dependencies
-pip install -r backend/requirements.txt
-pip install ultralytics torch torchvision
-
-# Install frontend dependencies
-cd frontend && npm install
+make dev
 ```
 
-## Project Structure
+启动后访问：
 
-```
-├── backend/                     # FastAPI backend
-│   ├── main.py                  # App entry, CORS, lifespan (auto-loads YOLO model)
-│   ├── core/
-│   │   ├── config.py            # Pydantic Settings
-│   │   ├── database.py          # SQLAlchemy + SQLite async
-│   │   ├── security.py          # JWT + bcrypt
-│   │   └── dependencies.py      # get_current_user dependency
-│   ├── models/
-│   │   ├── user.py              # User model
-│   │   └── schemas.py           # Request/response schemas
-│   ├── routers/
-│   │   ├── auth.py              # POST /register, /login, /change-password, /avatar
-│   │   ├── detection.py         # POST /detect/image, /detect/video, model upload, export
-│   │   └── websocket.py         # WS /ws/detect (real-time camera)
-│   ├── services/
-│   │   ├── yolo_service.py      # YOLO singleton service
-│   │   └── export_service.py    # CSV/image export
-│   ├── weights/                 # Model weights (.pt files)
-│   └── requirements.txt
-│
-├── frontend/                    # React + TypeScript frontend
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── LoginPage.tsx    # Login/Register page
-│   │   │   └── MainPage.tsx     # Main detection page
-│   │   ├── components/
-│   │   │   ├── layout/          # Sidebar, TitleBar
-│   │   │   ├── detection/       # DetectionCanvas, ResultsTable, DetectionInfo
-│   │   │   └── controls/        # Confidence/IOU sliders
-│   │   ├── hooks/
-│   │   │   ├── useAuth.ts       # Zustand auth store
-│   │   │   ├── useWebSocket.ts  # WebSocket connection management
-│   │   │   ├── useCamera.ts     # getUserMedia + frame capture
-│   │   │   └── useDetection.ts  # Detection state store
-│   │   ├── i18n/                # en.json, ja.json
-│   │   ├── services/api.ts      # Axios + JWT interceptor
-│   │   ├── types/               # TypeScript type definitions
-│   │   └── utils/canvas.ts      # Bounding box drawing
-│   ├── package.json
-│   └── vite.config.ts           # Proxy /api → 8000, /ws → ws://8000
-│
-├── src/                         # Original PySide6 desktop app (legacy)
-├── scripts/                     # Legacy run/test scripts
-├── datasets/                    # Training dataset
-├── test_media/                  # Test images and videos
-├── start.sh                     # One-command startup script
-└── README.md
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
+- API Docs: `http://localhost:8000/docs`
+
+## Common Commands
+
+```bash
+make setup           # install backend + frontend dependencies
+make backend         # run FastAPI with reload
+make frontend        # run Vite dev server
+make dev             # run backend + frontend together
+make clean           # remove common local build artifacts
 ```
 
-## API Endpoints
+## Backend Notes
 
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login, returns JWT |
-| GET | `/api/auth/me` | Get current user |
-| PUT | `/api/auth/change-password` | Change password |
-| POST | `/api/auth/avatar` | Upload avatar |
-| DELETE | `/api/auth/account` | Delete account |
+- 入口文件：`backend/main.py`
+- 路由目录：`backend/routers/`
+- 业务服务：`backend/services/`
+- 配置和数据库：`backend/core/`
 
-### Detection
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/detect/image` | Upload image for detection |
-| POST | `/api/detect/video` | Upload video for processing |
-| GET | `/api/detect/video/{id}/status` | Get video processing progress |
-| GET | `/api/detect/video/{id}/results` | Get video detection results |
-| POST | `/api/detect/model/upload` | Upload custom .pt model |
-| GET | `/api/detect/export/csv/{id}` | Export results as CSV |
+健康检查接口：
 
-### WebSocket
-| Endpoint | Description |
-|----------|-------------|
-| `WS /ws/detect?token=JWT` | Real-time camera detection |
+```text
+GET /api/health
+```
 
-**Protocol:**
-- Client → Server: Binary (JPEG frame) or Text (`{"type":"config","conf":0.35,"iou":0.45}`)
-- Server → Client: `{"detections":[{class_name, bbox, score, class_id}], "inference_time":0.034, "frame_id":42}`
+常用业务接口：
 
-### Health
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check + model status |
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `POST /api/detect/image`
+- `POST /api/detect/video`
+- `GET /api/detect/export/csv/{id}`
+- `WS /ws/detect?token=JWT`
 
-Full interactive API docs available at `http://localhost:8000/docs`.
+## Frontend Notes
 
-## Model Performance
-
-| Model | Precision | Recall | mAP@0.5 | Speed (CPU) |
-|-------|-----------|--------|---------|-------------|
-| YOLOv8n | 95%+ | 95%+ | 0.963 | ~78ms |
-| YOLOv5n | 94%+ | 93%+ | 0.940 | ~80ms |
-
-## Dataset
-
-- **Source**: [HaGRID](https://github.com/hukenovs/hagrid) open-source gesture dataset
-- **Total**: 11,886 images (train: 10,953 / val: 604 / test: 329)
-- **Resolution**: 640x640
-- **Classes**: Stop, Understand, NumberTwo
+- 页面：`frontend/src/pages/`
+- 布局组件：`frontend/src/components/layout/`
+- 检测组件：`frontend/src/components/detection/`
+- 状态与连接：`frontend/src/hooks/`
+- API 调用：`frontend/src/services/api.ts`
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
 | Backend | FastAPI, SQLAlchemy, Uvicorn |
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS |
+| Frontend | React 19, TypeScript, Vite |
 | State | Zustand |
-| Auth | JWT (python-jose), bcrypt (passlib) |
-| ML | Ultralytics YOLOv8, PyTorch, OpenCV |
-| Database | SQLite + aiosqlite |
-| i18n | react-i18next (EN/JA) |
-| Real-time | WebSocket (binary JPEG frames) |
+| Auth | JWT, bcrypt |
+| ML | Ultralytics YOLO, PyTorch, OpenCV |
+| Database | SQLite |
+| Realtime | WebSocket |
 
 ## License
 
 This project is for personal learning use only.
-
-## Acknowledgments
-
-- [HaGRID](https://github.com/hukenovs/hagrid) — Open-source gesture dataset
-- [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) — Detection framework
-- [FastAPI](https://fastapi.tiangolo.com/) — Backend framework
