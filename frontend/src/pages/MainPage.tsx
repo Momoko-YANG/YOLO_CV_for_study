@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import Sidebar from '../components/layout/Sidebar'
 import TitleBar from '../components/layout/TitleBar'
 import DetectionCanvas from '../components/detection/DetectionCanvas'
@@ -19,20 +19,11 @@ export default function MainPage() {
   const ws = useWebSocket(token)
   const store = useDetectionStore()
   const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const [models, setModels] = useState<string[]>([])
-  const [currentModel, setCurrentModel] = useState('')
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const folderInputRef = useRef<HTMLInputElement>(null)
+  const modelInputRef = useRef<HTMLInputElement>(null)
   const pollRef = useRef<number | null>(null)
-
-  // Fetch available models on mount
-  useEffect(() => {
-    api.get('/api/detect/models').then((res) => {
-      setModels(res.data.models)
-      setCurrentModel(res.data.current)
-    }).catch(() => {})
-  }, [])
 
   // --- Camera ---
   const handleCamera = useCallback(() => {
@@ -165,14 +156,22 @@ export default function MainPage() {
     e.target.value = ''
   }, [camera, ws, store])
 
-  // --- Model switch ---
-  const handleModelSwitch = useCallback(async (model: string) => {
+  // --- Model upload ---
+  const handleModel = useCallback(() => {
+    modelInputRef.current?.click()
+  }, [])
+
+  const onModelSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('file', file)
     try {
-      await api.post('/api/detect/model/switch', { model })
-      setCurrentModel(model)
+      await api.post('/api/detect/model/upload', formData)
     } catch (err) {
-      console.error('Model switch failed:', err)
+      console.error('Model upload failed:', err)
     }
+    e.target.value = ''
   }, [])
 
   // --- Save/Export ---
@@ -202,9 +201,7 @@ export default function MainPage() {
           onImage={handleImage}
           onVideo={handleVideo}
           onFolder={handleFolder}
-          models={models}
-          currentModel={currentModel}
-          onModelSwitch={handleModelSwitch}
+          onModel={handleModel}
           mode={store.mode}
         />
 
@@ -262,6 +259,7 @@ export default function MainPage() {
       <input ref={imageInputRef} type="file" accept=".jpg,.jpeg,.png" className="hidden" onChange={onImageSelected} />
       <input ref={videoInputRef} type="file" accept=".mp4,.avi" className="hidden" onChange={onVideoSelected} />
       <input ref={folderInputRef} type="file" accept=".jpg,.jpeg,.png" multiple className="hidden" onChange={onFolderSelected} />
+      <input ref={modelInputRef} type="file" accept=".pt" className="hidden" onChange={onModelSelected} />
 
       {/* Hidden video element for camera */}
       <video ref={camera.videoRef} className="hidden" playsInline muted />

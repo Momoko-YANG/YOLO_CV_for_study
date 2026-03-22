@@ -7,7 +7,6 @@ interface AuthState {
   user: User | null
   login: (username: string, password: string) => Promise<void>
   register: (username: string, password: string) => Promise<void>
-  changePassword: (oldPassword: string, newPassword: string) => Promise<void>
   logout: () => void
   loadFromStorage: () => void
 }
@@ -30,13 +29,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem('token', access_token)
     localStorage.setItem('user', JSON.stringify(user))
     set({ token: access_token, user })
-  },
-
-  changePassword: async (oldPassword, newPassword) => {
-    await api.put('/api/auth/change-password', {
-      old_password: oldPassword,
-      new_password: newPassword,
-    })
   },
 
   logout: () => {

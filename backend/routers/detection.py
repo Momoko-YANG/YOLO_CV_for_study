@@ -146,36 +146,31 @@ async def get_video_results(task_id: str):
     }
 
 
-@router.get("/models")
-async def list_models():
-    """List available .pt model files and the currently active model."""
-    weights_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "weights")
-    models = sorted(f for f in os.listdir(weights_dir) if f.endswith(".pt"))
+@router.get("/model/classes")
+async def get_model_classes():
     yolo = YOLOService.get_instance()
-    current = os.path.basename(yolo.model_path) if yolo.model_path else ""
-    return {"models": models, "current": current}
+    return {"classes": yolo.get_class_names()}
 
 
-@router.post("/model/switch")
-async def switch_model(
-    body: dict,
+@router.post("/model/upload")
+async def upload_model(
+    file: UploadFile = File(...),
     _user: User = Depends(get_current_user),
 ):
-    """Switch to a different model by filename."""
-    filename = body.get("model", "")
-    if not filename.endswith(".pt"):
-        raise HTTPException(status_code=400, detail="Invalid model filename")
+    if not file.filename or not file.filename.endswith(".pt"):
+        raise HTTPException(status_code=400, detail="Only .pt model files are accepted")
 
-    weights_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "weights")
-    model_path = os.path.join(weights_dir, filename)
-    if not os.path.isfile(model_path):
-        raise HTTPException(status_code=404, detail="Model file not found")
+    os.makedirs("weights", exist_ok=True)
+    model_path = os.path.join("weights", file.filename)
+    contents = await file.read()
+    with open(model_path, "wb") as f:
+        f.write(contents)
 
     yolo = YOLOService.get_instance()
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, lambda: yolo.load_model(model_path))
 
-    return {"message": "Model switched", "current": filename, "classes": yolo.get_class_names()}
+    return {"message": "Model loaded", "classes": yolo.get_class_names()}
 
 
 # --- Export ---
