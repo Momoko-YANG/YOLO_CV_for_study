@@ -8,8 +8,7 @@ interface TitleBarProps {
 export default function TitleBar({ onSave, canExport }: TitleBarProps) {
   const { t, i18n } = useTranslation()
 
-  const toggleLang = () => {
-    const next = i18n.language === 'en' ? 'ja' : 'en'
+  const handleLanguageChange = (next: string) => {
     i18n.changeLanguage(next)
     localStorage.setItem('language', next)
   }
@@ -19,12 +18,15 @@ export default function TitleBar({ onSave, canExport }: TitleBarProps) {
       <h1 className="flex-1 text-center text-sm font-semibold text-emerald-700 tracking-wide">
         {t('app_title')}
       </h1>
-      <button
-        onClick={toggleLang}
-        className="px-3 py-1 text-xs rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors font-medium"
+      <select
+        value={i18n.resolvedLanguage || i18n.language}
+        onChange={(e) => handleLanguageChange(e.target.value)}
+        className="rounded-md bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 outline-none transition-colors hover:bg-gray-200"
       >
-        {i18n.language === 'en' ? '日本語' : 'EN'}
-      </button>
+        <option value="zh">中文</option>
+        <option value="en">EN</option>
+        <option value="ja">日本語</option>
+      </select>
       <button
         onClick={onSave}
         disabled={!canExport}

@@ -11,7 +11,7 @@ English documentation starts at [English Guide](#english-guide)
 
 ### 1. 项目简介
 
-这是一个基于 **YOLO + FastAPI + React** 的手势识别 Web 项目，当前仓库只保留 Web 版，不再包含桌面版代码。
+这是一个基于 **YOLO + FastAPI + React** 的手势识别 Web 项目。
 
 项目支持：
 
@@ -399,7 +399,7 @@ model_path = "weights/best-yolov8n.pt"
 
 ### 1. Overview
 
-This repository contains a **web-based hand gesture recognition system** built with **YOLO, FastAPI, and React**. The desktop edition has been removed; this repo now keeps only the web version.
+This repository contains a **web-based hand gesture recognition system** built with **YOLO, FastAPI, and React**. 
 
 The system currently supports:
 
