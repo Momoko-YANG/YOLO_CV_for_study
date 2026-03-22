@@ -8,10 +8,11 @@ import numpy as np
 from core.config import settings
 from models.schemas import DetectionResult
 
+# Gesture label mapping
 GESTURE_LABELS = {
-    "Stop": "Stop",
-    "Understand": "Understand",
-    "NumberTwo": "Number Two",
+    "Stop": {"en": "Stop", "zh": "停止"},
+    "Understand": {"en": "Understand", "zh": "了解"},
+    "NumberTwo": {"en": "Number Two", "zh": "数字2"},
 }
 
 
@@ -41,10 +42,14 @@ class YOLOService:
         self.model = YOLO(model_path)
         self.model_path = model_path
 
+        # Build class name list with Chinese mapping
         names_dict = self.model.names
-        self.names = [
-            GESTURE_LABELS.get(v, v) for v in names_dict.values()
-        ]
+        self.names = []
+        for v in names_dict.values():
+            if v in GESTURE_LABELS:
+                self.names.append(GESTURE_LABELS[v]["zh"])
+            else:
+                self.names.append(v)
 
         # Warmup
         self.model(
@@ -73,11 +78,6 @@ class YOLOService:
         )
         inference_time = time.time() - start
 
-        detections = self._parse_boxes(results)
-        return detections, inference_time
-
-    def _parse_boxes(self, results) -> List[DetectionResult]:
-        """Parse YOLO prediction boxes into DetectionResult list."""
         detections = []
         for res in results[0].boxes:
             for box in res:
@@ -92,7 +92,8 @@ class YOLOService:
                         class_id=class_id,
                     )
                 )
-        return detections
+
+        return detections, inference_time
 
     def get_class_names(self) -> List[str]:
         return self.names.copy()

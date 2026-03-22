@@ -16,7 +16,7 @@ echo ""
 echo "[1/2] Starting FastAPI backend on port 8000..."
 cd "$PROJECT_DIR/backend"
 
-# Use backend as import root
+# Use PYTHONPATH to avoid local ultralytics/ folder conflict
 PYTHONPATH="$PROJECT_DIR/backend" "$VENV/python3" -m uvicorn main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 echo "  Backend PID: $BACKEND_PID"

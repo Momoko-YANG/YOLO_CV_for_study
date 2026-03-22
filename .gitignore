@@ -1,38 +1,48 @@
-# Training datasets
+# Dataset - too large to push
 datasets/
 
-# Model weights
+# Model weight files
 weights/*.pt
-backend/weights/*.pt
 
-# Training outputs
+# Training output results
 runs/
-output_examples/
 
-# Python
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
-*.cache
+
+# IDE configuration
+.idea/
+
+# Database files
 *.db
 
-# Frontend
-frontend/node_modules/
-frontend/dist/
-
-# Runtime files
-backend/static/
+# Video output
 *.avi
 *.mp4
 
-# Local environments
+# Cache files
+*.cache
+
+# Large resource files (contains embedded image resources, too large to push)
+src/RecSystem.py
+src/RecSystem_rc.py
+
+# Virtual environment
 venv/
 
-# Editor metadata
-.idea/
+# Node modules
+node_modules/
+
+# Frontend build output
+frontend/dist/
+
+# Backend uploads and exports
+backend/static/
+
+# Backend model weights
+backend/weights/*.pt
 
 # Claude worktrees
 .claude/
-
-# macOS Finder metadata
-.DS_Store
