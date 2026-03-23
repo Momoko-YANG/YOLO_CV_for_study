@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.egg-info/
+app.db
+static/uploads/
+static/exports/
