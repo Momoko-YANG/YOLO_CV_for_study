@@ -1,0 +1,27 @@
+# ============================================================
+# Hand Gesture Dataset Configuration
+# ============================================================
+# Usage:
+#   model.train(data="training/dataset.yaml")
+#
+# Directory structure:
+#   dataset_root/
+#   ├── images/
+#   │   ├── train/       # Training images (.jpg, .png)
+#   │   └── val/         # Validation images
+#   └── labels/
+#       ├── train/       # YOLO format labels (.txt)
+#       └── val/         # Each line: class_id cx cy w h (normalized)
+# ============================================================
+
+# --- Modify this to your actual dataset path ---
+path: C:/new/YOLO/datasets/hand_gesture
+train: images/train
+val: images/val
+# test: images/test  # optional
+
+# Class names (must match your annotation class IDs)
+names:
+  0: Stop
+  1: Understand
+  2: NumberTwo

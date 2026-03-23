@@ -110,9 +110,13 @@ English documentation starts at [English Guide](#english-guide)
 │   ├── package.json
 │   └── vite.config.ts
 │
-├── output_examples/          # 示例输出文件
-├── scripts/                  # 小型辅助脚本
-├── test_media/               # 测试图片/视频
+├── training/                 # ML 训练 Pipeline
+│   ├── train.py              # 微调训练脚本
+│   ├── evaluate.py           # 模型评估脚本
+│   ├── compare.py            # 实验对比脚本
+│   ├── dataset.yaml          # 数据集配置
+│   └── configs/              # 实验超参配置
+│
 ├── ultralytics/              # 仓库内 YOLO 相关代码
 ├── weights/                  # 额外本地模型权重
 ├── Makefile                  # 常用命令入口
@@ -378,7 +382,60 @@ model_path = "weights/best-yolov8n.pt"
 
 ---
 
-### 14. 适合继续扩展的方向
+### 14. 训练 Pipeline（MLE）
+
+本项目包含完整的模型微调、评估、对比流程，位于 `training/` 目录。
+
+#### 14.1 准备数据集
+
+1. 准备 YOLO 格式的标注数据（每张图片一个 `.txt`，每行 `class_id cx cy w h`）
+2. 按 train/val 划分放入目录
+3. 修改 `training/dataset.yaml` 中的 `path` 和类别名
+
+#### 14.2 微调训练
+
+```bash
+# 使用默认配置（yolov8s，冻结 backbone）
+python training/train.py
+
+# 使用预设实验配置
+python training/train.py --config training/configs/finetune_v8s.yaml
+
+# 自定义参数
+python training/train.py --model yolov8m.pt --epochs 200 --freeze 0 --lr0 0.0005
+```
+
+可用的预设配置：
+
+| 配置文件 | 策略 | 适用场景 |
+|----------|------|---------|
+| `finetune_v8s.yaml` | v8s + 冻结 backbone | 推荐起步，性价比最高 |
+| `finetune_v8m.yaml` | v8m + 冻结 backbone | 追求更高精度 |
+| `finetune_v8s_fullunfreeze.yaml` | v8s + 全部解冻 | 数据充足时的最大适应 |
+
+#### 14.3 评估与对比
+
+```bash
+# 评估单个模型
+python training/evaluate.py --model runs/gesture/exp1/weights/best.pt
+
+# 与基线模型对比
+python training/evaluate.py --model runs/gesture/exp1/weights/best.pt --baseline yolov8s.pt
+
+# 汇总所有实验结果
+python training/compare.py
+
+# 导出对比 CSV
+python training/compare.py --output results.csv
+```
+
+#### 14.4 部署微调后的模型
+
+训练完成后，`best.pt` 会自动复制到 `backend/weights/`。更新 `backend/core/config.py` 中的 `model_path` 即可使用。
+
+---
+
+### 15. 适合继续扩展的方向
 
 - 完整文件夹批处理
 - 视频结果可视化回放
@@ -500,9 +557,13 @@ Architecture:
 │   ├── package.json
 │   └── vite.config.ts
 │
-├── output_examples/          # sample output files
-├── scripts/                  # small helper scripts
-├── test_media/               # test images and videos
+├── training/                 # ML training pipeline
+│   ├── train.py              # Fine-tuning script
+│   ├── evaluate.py           # Model evaluation script
+│   ├── compare.py            # Experiment comparison script
+│   ├── dataset.yaml          # Dataset configuration
+│   └── configs/              # Experiment hyperparameter configs
+│
 ├── ultralytics/              # YOLO-related code kept in the repo
 ├── weights/                  # extra local model weights
 ├── Makefile                  # common project commands
@@ -768,7 +829,60 @@ Use `.env` if you need to override defaults.
 
 ---
 
-### 14. Good Next Steps
+### 14. Training Pipeline (MLE)
+
+The project includes a full fine-tuning, evaluation, and comparison workflow in `training/`.
+
+#### 14.1 Prepare dataset
+
+1. Annotate images in YOLO format (one `.txt` per image, each line: `class_id cx cy w h`)
+2. Split into train/val directories
+3. Update `training/dataset.yaml` with your dataset path and class names
+
+#### 14.2 Fine-tune
+
+```bash
+# Default config (yolov8s, freeze backbone)
+python training/train.py
+
+# Use a preset experiment config
+python training/train.py --config training/configs/finetune_v8s.yaml
+
+# Custom parameters
+python training/train.py --model yolov8m.pt --epochs 200 --freeze 0 --lr0 0.0005
+```
+
+Available presets:
+
+| Config | Strategy | When to use |
+|--------|----------|-------------|
+| `finetune_v8s.yaml` | v8s + frozen backbone | Recommended starting point |
+| `finetune_v8m.yaml` | v8m + frozen backbone | Higher accuracy |
+| `finetune_v8s_fullunfreeze.yaml` | v8s + all layers | When you have enough data |
+
+#### 14.3 Evaluate and compare
+
+```bash
+# Evaluate a single model
+python training/evaluate.py --model runs/gesture/exp1/weights/best.pt
+
+# Compare against baseline
+python training/evaluate.py --model runs/gesture/exp1/weights/best.pt --baseline yolov8s.pt
+
+# Summarize all experiments
+python training/compare.py
+
+# Export comparison CSV
+python training/compare.py --output results.csv
+```
+
+#### 14.4 Deploy
+
+After training, `best.pt` is automatically copied to `backend/weights/`. Update `model_path` in `backend/core/config.py` to use it.
+
+---
+
+### 15. Good Next Steps
 
 - full folder batch processing
 - video playback with result overlays

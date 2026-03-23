@@ -1,0 +1,44 @@
+# ============================================================
+# Experiment: YOLOv8s Full Unfreeze (Maximum adaptation)
+# ============================================================
+# Usage:
+#   python training/train.py --config training/configs/finetune_v8s_fullunfreeze.yaml
+#
+# Strategy:
+#   - Train ALL layers (freeze=0) for maximum adaptation
+#   - Needs more data to avoid overfitting
+#   - Use when frozen fine-tuning plateaus
+#   - Very low LR to preserve pretrained features
+# ============================================================
+
+model: yolov8s.pt
+data: training/dataset.yaml
+epochs: 200
+batch: 16
+imgsz: 640
+
+# Full unfreeze
+freeze: 0
+lr0: 0.0005
+lrf: 0.01
+optimizer: AdamW
+cos_lr: true
+patience: 50
+warmup_epochs: 5.0
+
+# Augmentation (stronger to prevent overfitting)
+degrees: 20.0
+flipud: 0.0
+fliplr: 0.5
+mosaic: 1.0
+mixup: 0.2
+scale: 0.5
+translate: 0.15
+hsv_h: 0.02
+hsv_s: 0.7
+hsv_v: 0.4
+close_mosaic: 30
+
+# Output
+project: runs/gesture
+name: v8s_fullunfreeze

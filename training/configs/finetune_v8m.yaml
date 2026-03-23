@@ -1,0 +1,37 @@
+# ============================================================
+# Experiment: YOLOv8m Fine-tune (Higher accuracy)
+# ============================================================
+# Usage:
+#   python training/train.py --config training/configs/finetune_v8m.yaml
+#
+# Strategy:
+#   - Larger model for better accuracy (at cost of speed)
+#   - Freeze backbone, longer training
+#   - Stronger augmentation to compensate for larger model capacity
+# ============================================================
+
+model: yolov8m.pt
+data: training/dataset.yaml
+epochs: 150
+batch: 8
+imgsz: 640
+
+# Fine-tuning
+freeze: 12
+lr0: 0.0008
+optimizer: AdamW
+cos_lr: true
+patience: 40
+
+# Augmentation
+degrees: 20.0
+flipud: 0.0
+fliplr: 0.5
+mosaic: 1.0
+mixup: 0.15
+scale: 0.5
+close_mosaic: 25
+
+# Output
+project: runs/gesture
+name: v8m_finetune_highaccuracy

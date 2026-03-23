@@ -1,0 +1,36 @@
+# ============================================================
+# Experiment: YOLOv8s Fine-tune (Recommended baseline)
+# ============================================================
+# Usage:
+#   python training/train.py --config training/configs/finetune_v8s.yaml
+#
+# Strategy:
+#   - Freeze backbone (first 10 layers), only train detection head
+#   - Low learning rate for fine-tuning
+#   - Moderate augmentation suited for hand gestures
+# ============================================================
+
+model: yolov8s.pt
+data: training/dataset.yaml
+epochs: 100
+batch: 16
+imgsz: 640
+
+# Fine-tuning
+freeze: 10
+lr0: 0.001
+optimizer: AdamW
+cos_lr: true
+patience: 30
+
+# Augmentation
+degrees: 15.0
+flipud: 0.0
+fliplr: 0.5
+mosaic: 1.0
+mixup: 0.1
+close_mosaic: 20
+
+# Output
+project: runs/gesture
+name: v8s_finetune_baseline
