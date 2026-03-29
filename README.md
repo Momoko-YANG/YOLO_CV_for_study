@@ -1,418 +1,218 @@
-# YOLO Hand Gesture Web System
+# YOLO Hand Gesture Recognition
 
-> A web-based hand gesture recognition system built with FastAPI, React, and YOLO.
+基于 **YOLOv8 / YOLOv5 + FastAPI + React** 的手势识别 Web 系统。
 
-中文说明见 [中文说明 / Chinese Guide](#中文说明)  
-English documentation starts at [English Guide](#english-guide)
+## 功能概览
 
----
+- 用户注册 / 登录（JWT 鉴权）、修改密码、上传头像、删除账号
+- 图片上传识别
+- 视频上传异步处理
+- 摄像头实时识别（WebSocket）
+- 模型列表查看、切换、上传
+- 视频检测结果导出 CSV
+- 前端支持中 / 英 / 日三语切换
+- 多环境配置（dev / staging / prod）
+- Docker Compose 一键部署
+- CI 自动化（Ruff lint + ESLint + pytest + Docker build）
 
-## 中文说明
-
-### 1. 项目简介
-
-这是一个基于 **YOLO + FastAPI + React** 的手势识别 Web 项目。
-
-项目支持：
-
-- 用户注册、登录、鉴权
-- 图片识别
-- 视频识别
-- 摄像头实时识别
-- 模型上传与切换
-- 视频结果导出 CSV
-- 前端界面语言切换
-
-当前架构为前后端分离：
-
-- 后端：FastAPI，负责鉴权、模型加载、推理、导出和 WebSocket
-- 前端：React + TypeScript + Vite，负责登录页、主识别页和交互界面
-- 模型：YOLO `.pt` 权重文件
-- 数据库：SQLite
-
----
-
-### 2. 当前功能
-
-#### 2.1 已实现功能
-
-- 账号注册与登录
-- JWT 鉴权
-- 修改密码
-- 上传图片并返回检测结果
-- 上传视频并异步处理
-- 摄像头通过 WebSocket 实时识别
-- 选择已有模型
-- 上传新的 `.pt` 模型并立即切换
-- 导出视频识别结果 CSV
-- 前端支持中/英/日文案资源
-
-#### 2.2 当前前端入口
-
-- 左侧边栏：
-  - `Camera`
-  - `Image`
-  - `Video`
-  - `Folder`
-  - `Model`
-  - `Change Password`
-  - 用户退出
-- 顶部栏：
-  - 语言切换
-  - `Export CSV`
-
-#### 2.3 当前行为说明
-
-- `Export CSV` 只对视频识别任务有效
-- `Model` 会打开模型弹窗，可查看、切换、上传模型
-- `Folder` 当前实现是读取所选文件中的第一张图片进行检测，不是完整批处理
-- 模型列表接口依赖后端新版本，修改后如果前端提示无法加载模型列表，请重启后端
-
----
-
-### 3. 技术栈
+## 技术栈
 
 | 层 | 技术 |
 |---|---|
-| Frontend | React 19, TypeScript, Vite |
-| State | Zustand |
-| Backend | FastAPI, Uvicorn |
-| Auth | JWT, bcrypt / passlib |
-| Database | SQLite, SQLAlchemy async, aiosqlite |
-| Vision | Ultralytics YOLO, OpenCV, PyTorch |
-| Real-time | WebSocket |
-| i18n | react-i18next |
+| 前端 | React 19 · TypeScript · Vite · Tailwind CSS · Zustand · react-i18next |
+| 后端 | FastAPI · Uvicorn · SQLAlchemy (async) · aiosqlite · python-jose · passlib |
+| 模型 | Ultralytics YOLO · OpenCV · PyTorch (CUDA / MPS / CPU) |
+| 实时通信 | WebSocket |
+| 数据库 | SQLite |
+| CI/CD | GitHub Actions · Docker Compose · Ruff · ESLint · pytest |
+| 实验跟踪 | MLflow（可选） |
 
----
+## 目录结构
 
-### 4. 目录结构
-
-```text
+```
 .
 ├── backend/                  # FastAPI 后端
-│   ├── core/                 # 配置、数据库、依赖、鉴权
-│   ├── models/               # Pydantic schema / SQLAlchemy model
-│   ├── routers/              # auth / detection / websocket 路由
-│   ├── services/             # YOLO 服务、导出服务
-│   ├── weights/              # 默认模型权重
-│   ├── app.db                # SQLite 数据库（运行后生成/使用）
+│   ├── core/                 # 配置、数据库、鉴权、依赖注入
+│   ├── models/               # Pydantic 模型 + SQLAlchemy 实体
+│   ├── routers/              # auth · detection · websocket 路由
+│   ├── services/             # YOLO 推理服务 · 导出服务
+│   ├── tests/                # pytest 测试
+│   ├── weights/              # 模型权重 (.pt)
+│   ├── Dockerfile
 │   └── requirements.txt
-│
 ├── frontend/                 # React 前端
 │   ├── src/
-│   │   ├── components/       # UI 组件
-│   │   ├── hooks/            # Zustand / camera / websocket hooks
-│   │   ├── i18n/             # 多语言资源
-│   │   ├── pages/            # LoginPage / MainPage
-│   │   ├── services/         # API 封装
-│   │   ├── types/            # 前端类型定义
-│   │   └── utils/            # Canvas 工具
-│   ├── package.json
+│   │   ├── components/       # Sidebar · TitleBar · DetectionCanvas 等
+│   │   ├── hooks/            # useAuth · useCamera · useWebSocket · useDetection
+│   │   ├── i18n/             # zh.json · en.json · ja.json
+│   │   ├── pages/            # LoginPage · MainPage
+│   │   ├── services/         # Axios API 封装
+│   │   ├── types/            # TypeScript 类型
+│   │   └── utils/            # Canvas 绘制工具
+│   ├── Dockerfile
 │   └── vite.config.ts
-│
-├── training/                 # ML 训练 Pipeline
-│   ├── train.py              # 微调训练脚本
-│   ├── evaluate.py           # 模型评估脚本
-│   ├── compare.py            # 实验对比脚本
+├── training/                 # 模型训练 Pipeline
+│   ├── train.py              # 微调训练
+│   ├── evaluate.py           # 模型评估
+│   ├── benchmark.py          # 推理基准测试
+│   ├── export_onnx.py        # ONNX 导出
+│   ├── validate_dataset.py   # 数据集质量校验
+│   ├── compare.py            # 实验结果对比
 │   ├── dataset.yaml          # 数据集配置
-│   └── configs/              # 实验超参配置
-│
-├── ultralytics/              # 仓库内 YOLO 相关代码
-├── weights/                  # 额外本地模型权重
-├── Makefile                  # 常用命令入口
-└── start.sh                  # 一键启动前后端
+│   ├── configs/              # 实验超参配置
+│   └── notebooks/            # EDA Notebook
+├── .env.example              # 环境变量模板
+├── .github/workflows/ci.yml  # GitHub Actions CI
+├── docker-compose.yml        # Docker 编排
+├── Makefile                  # 常用命令
+├── start.sh                  # 一键启动脚本
+└── pyproject.toml            # 项目元数据 + Ruff/pytest 配置
 ```
 
----
+## 快速开始
 
-### 5. 环境要求
+### 环境要求
 
 - Python 3.9+
 - Node.js 18+
-- 本地已创建 `./venv`
-- 前端依赖已安装
-- 至少有一个可用模型权重文件：
-  - `backend/weights/*.pt`
+- 至少一个 `.pt` 模型权重文件放在 `backend/weights/`
 
----
-
-### 6. 快速开始
-
-#### 6.1 初始化环境
+### 安装依赖
 
 ```bash
 python3 -m venv venv
-./venv/bin/pip install -r backend/requirements.txt
-cd frontend && npm install
+source venv/bin/activate
+pip install -r backend/requirements.txt
+
+cd frontend && npm install && cd ..
 ```
 
-#### 6.2 使用 Makefile
+或使用 Makefile：
 
 ```bash
 make setup
-make backend
-make frontend
-make dev
-make build
-make lint
-make verify
-make clean
 ```
 
-#### 6.3 一键启动
+### 配置环境变量
 
 ```bash
+cp .env.example .env
+# 编辑 .env 填入实际值（开发环境可直接使用默认值）
+```
+
+### 启动服务
+
+```bash
+# 一键启动前后端
 ./start.sh
+
+# 或分别启动
+make backend   # 后端 http://localhost:8000
+make frontend  # 前端 http://localhost:5173
 ```
 
-或者：
+启动后访问：
+
+| 服务 | 地址 |
+|---|---|
+| 前端界面 | http://localhost:5173 |
+| 后端 API | http://localhost:8000 |
+| API 文档 | http://localhost:8000/docs （prod 环境自动关闭） |
+
+### Docker 部署
 
 ```bash
-make dev
+docker compose up --build
 ```
 
-启动后默认访问：
+包含三个服务：`backend`（FastAPI）、`frontend`（Vite）、`mlflow`（实验跟踪）。
 
-- 前端：`http://localhost:5173`
-- 后端：`http://localhost:8000`
-- API 文档：`http://localhost:8000/docs`
+## 环境配置
 
----
+后端通过 `pydantic-settings` 管理配置，所有参数可通过 `.env` 文件或环境变量覆盖。
 
-### 7. 开发命令说明
+| 变量 | 默认值 | 说明 |
+|---|---|---|
+| `APP_ENV` | `dev` | 运行环境：`dev` / `staging` / `prod` |
+| `DEBUG` | `false` | 调试模式 |
+| `SECRET_KEY` | 开发专用密钥 | JWT 签名密钥，staging/prod **必须**覆盖 |
+| `CORS_ORIGINS` | `http://localhost:5173,...` | 允许的前端来源（逗号分隔） |
+| `MODEL_PATH` | `weights/best-yolov8n.pt` | 默认模型路径 |
+| `DEVICE` | 自动检测 | 推理设备：`cuda:0` / `mps` / `cpu` |
+| `DEFAULT_CONF` | `0.25` | 默认置信度阈值 |
+| `DEFAULT_IOU` | `0.5` | 默认 IoU 阈值 |
+| `DATABASE_URL` | `sqlite+aiosqlite:///./app.db` | 数据库连接 |
 
-| 命令 | 作用 |
-|---|---|
-| `make setup` | 安装前后端依赖 |
-| `make setup-backend` | 安装后端依赖到 `venv` |
-| `make setup-frontend` | 安装前端依赖 |
-| `make backend` | 启动 FastAPI，带 `--reload` |
-| `make frontend` | 启动 Vite 开发服务器 |
-| `make dev` | 同时启动前后端 |
-| `make build` | 构建前端生产包 |
-| `make lint-backend` | 运行后端 Ruff（`backend/` + `training/`） |
-| `make lint-frontend` | 运行前端 ESLint |
-| `make lint` | 运行后端 Ruff + 前端 ESLint |
-| `make verify` | 运行轻量校验 |
-| `make clean` | 清理常见构建产物 |
+> staging/prod 环境启动时如果未设置 `SECRET_KEY`，后端会直接报错拒绝启动。生成密钥：
+> ```bash
+> python -c "import secrets; print(secrets.token_urlsafe(32))"
+> ```
 
----
+## API 接口
 
-### 8. 后端说明
-
-#### 8.1 入口文件
-
-- `backend/main.py`
-
-#### 8.2 核心模块
-
-- `backend/core/config.py`
-  - 应用配置
-  - 默认模型路径
-  - 默认阈值
-  - 数据库路径
-- `backend/core/database.py`
-  - SQLAlchemy async engine / session
-  - 数据库初始化
-- `backend/core/security.py`
-  - JWT 编码/解码
-  - 密码哈希与验证
-- `backend/core/dependencies.py`
-  - `get_current_user`
-
-#### 8.3 服务层
-
-- `backend/services/yolo_service.py`
-  - 单例 YOLO 服务
-  - 加载模型
-  - 执行检测
-  - 维护手势标签映射（`en/zh`）并返回类别显示名
-- `backend/services/export_service.py`
-  - 保存带框图片
-  - 导出 CSV
-
-#### 8.4 数据与产物
-
-运行过程中通常会使用或生成这些内容：
-
-- `backend/app.db`
-- `backend/static/uploads/`
-- `backend/static/exports/`
-- `backend/static/avatars/`
-
----
-
-### 9. 前端说明
-
-#### 9.1 页面
-
-- `frontend/src/pages/LoginPage.tsx`
-  - 登录 / 注册
-- `frontend/src/pages/MainPage.tsx`
-  - 主识别页面
-  - 图片/视频/摄像头/模型入口
-  - 模型选择弹窗
-  - CSV 导出
-
-#### 9.2 核心组件
-
-- `frontend/src/components/layout/Sidebar.tsx`
-  - 左侧功能入口
-  - 修改密码弹窗
-- `frontend/src/components/layout/TitleBar.tsx`
-  - 语言切换
-  - 导出 CSV
-- `frontend/src/components/detection/*`
-  - 画布、进度条、结果表、检测信息
-
-#### 9.3 状态与连接
-
-- `frontend/src/hooks/useAuth.ts`
-- `frontend/src/hooks/useDetection.ts`
-- `frontend/src/hooks/useCamera.ts`
-- `frontend/src/hooks/useWebSocket.ts`
-
----
-
-### 10. API 说明
-
-#### 10.1 健康检查
+### 鉴权
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| `GET` | `/api/health` | 检查服务状态和模型是否加载 |
-
-#### 10.2 鉴权
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| `POST` | `/api/auth/register` | 注册 |
-| `POST` | `/api/auth/login` | 登录 |
-| `GET` | `/api/auth/me` | 当前用户信息 |
+| `POST` | `/api/auth/register` | 注册新用户 |
+| `POST` | `/api/auth/login` | 登录，返回 JWT |
+| `GET` | `/api/auth/me` | 获取当前用户信息 |
 | `PUT` | `/api/auth/change-password` | 修改密码 |
 | `POST` | `/api/auth/avatar` | 上传头像 |
-| `DELETE` | `/api/auth/account` | 删除账户 |
+| `DELETE` | `/api/auth/account` | 删除账号 |
 
-#### 10.3 识别
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| `POST` | `/api/detect/image` | 图片识别 |
-| `POST` | `/api/detect/video` | 上传并异步处理视频 |
-| `GET` | `/api/detect/video/{task_id}/status` | 查询视频处理进度 |
-| `GET` | `/api/detect/video/{task_id}/results` | 获取视频检测结果 |
-| `GET` | `/api/detect/export/csv/{task_id}` | 导出视频结果 CSV |
-
-#### 10.4 模型管理
+### 检测
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| `GET` | `/api/detect/model/list` | 获取模型列表 |
-| `POST` | `/api/detect/model/select` | 切换当前模型 |
-| `POST` | `/api/detect/model/upload` | 上传并加载新模型 |
-| `GET` | `/api/detect/model/classes` | 获取当前模型类别显示名（当前默认返回中文） |
+| `POST` | `/api/detect/image` | 图片检测 |
+| `POST` | `/api/detect/video` | 上传视频并异步处理 |
+| `GET` | `/api/detect/video/{task_id}/status` | 视频处理进度 |
+| `GET` | `/api/detect/video/{task_id}/results` | 视频检测结果 |
+| `GET` | `/api/detect/export/csv/{task_id}` | 导出 CSV |
 
-#### 10.5 WebSocket
+### 模型管理
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| `GET` | `/api/detect/model/list` | 列出可用模型 |
+| `GET` | `/api/detect/model/classes` | 获取当前模型类别名 |
+| `POST` | `/api/detect/model/select` | 切换模型 |
+| `POST` | `/api/detect/model/upload` | 上传新模型并加载 |
+
+### WebSocket 实时检测
 
 | 协议 | 路径 | 说明 |
 |---|---|---|
-| `WS` | `/ws/detect?token=JWT` | 实时摄像头识别 |
+| `WS` | `/ws/detect?token=<JWT>` | 摄像头实时检测 |
 
-消息约定：
+**消息协议：**
 
-- 客户端 -> 服务端
-  - 二进制 JPEG 帧
-  - 文本配置：`{"type":"config","conf":0.35,"iou":0.45}`
-- 服务端 -> 客户端
-  - `{"detections":[...],"inference_time":0.034,"frame_id":42}`
-
----
-
-### 11. 模型说明
-
-默认配置在：
-
-- `backend/core/config.py`
-
-当前默认模型路径：
-
-```python
-model_path = "weights/best-yolov8n.pt"
+```
+客户端 → 服务端：二进制 JPEG 帧 / {"type":"config","conf":0.3,"iou":0.4}
+服务端 → 客户端：{"detections":[...],"inference_time":0.034,"frame_id":42}
 ```
 
-项目支持：
+### 健康检查
 
-- 从已有 `.pt` 文件中切换模型
-- 上传新的 `.pt` 模型
-- 启动时自动尝试加载默认模型
+```
+GET /api/health → {"status":"ok","model_loaded":true,"classes":[...]}
+```
 
-当前权重一般可放在：
+## 模型训练
 
-- `backend/weights/`
-- `weights/`
+项目包含完整的 YOLO 微调、评估、对比 Pipeline，位于 `training/` 目录。
 
-#### 11.1 手势标签映射（Gesture Labels）
+### 准备数据集
 
-后端在 `backend/services/yolo_service.py` 维护固定手势键和双语标签：
+1. 准备 YOLO 格式标注（每张图片一个 `.txt`，每行 `class_id cx cy w h`）
+2. 按 train/val 划分
+3. 修改 `training/dataset.yaml`
 
-| Key | English | 中文 |
-|---|---|---|
-| `Stop` | `Stop` | `停止` |
-| `Understand` | `Understand` | `了解` |
-| `NumberTwo` | `Number Two` | `数字2` |
-
-当前行为：
-
-- `detect` 返回结果中的 `class_name` 为中文显示名。
-- `GET /api/detect/model/classes` 返回当前模型类别显示名（中文）。
-
----
-
-### 12. 配置说明
-
-后端通过 `Settings` 管理主要配置，典型项包括：
-
-- `secret_key`
-- `algorithm`
-- `access_token_expire_minutes`
-- `model_path`
-- `device`
-- `default_conf`
-- `default_iou`
-- `image_size`
-- `database_url`
-- `upload_dir`
-- `export_dir`
-- `avatar_dir`
-- `max_upload_size`
-
-如果你需要覆盖默认值，可以使用 `.env`。
-
----
-
-### 13. 已知限制
-
-- `Folder` 当前不是完整文件夹批量处理，只会处理选择结果中的第一张图片
-- 视频处理任务保存在内存中，服务重启后任务状态不会保留
-- 当前前端导出只支持视频结果 CSV，不支持图片结果导出按钮
-- 模型列表和切换功能依赖后端已重启到新版本
-
----
-
-### 14. 训练 Pipeline（MLE）
-
-本项目包含完整的模型微调、评估、对比流程，位于 `training/` 目录。
-
-#### 14.1 准备数据集
-
-1. 准备 YOLO 格式的标注数据（每张图片一个 `.txt`，每行 `class_id cx cy w h`）
-2. 按 train/val 划分放入目录
-3. 修改 `training/dataset.yaml` 中的 `path` 和类别名
-
-#### 14.2 微调训练
+### 训练
 
 ```bash
-# 使用默认配置（yolov8s，冻结 backbone）
+# 默认配置
 python training/train.py
 
 # 使用预设实验配置
@@ -422,511 +222,75 @@ python training/train.py --config training/configs/finetune_v8s.yaml
 python training/train.py --model yolov8m.pt --epochs 200 --freeze 0 --lr0 0.0005
 ```
 
-可用的预设配置：
+预设配置：
 
-| 配置文件 | 策略 | 适用场景 |
-|----------|------|---------|
-| `finetune_v8s.yaml` | v8s + 冻结 backbone | 推荐起步，性价比最高 |
-| `finetune_v8m.yaml` | v8m + 冻结 backbone | 追求更高精度 |
-| `finetune_v8s_fullunfreeze.yaml` | v8s + 全部解冻 | 数据充足时的最大适应 |
+| 配置文件 | 策略 | 场景 |
+|---|---|---|
+| `finetune_v8s.yaml` | YOLOv8s + 冻结 backbone | 推荐起步 |
+| `finetune_v8m.yaml` | YOLOv8m + 冻结 backbone | 追求更高精度 |
+| `finetune_v8s_fullunfreeze.yaml` | YOLOv8s + 全部解冻 | 数据充足时 |
 
-#### 14.3 评估与对比
+### 评估与对比
 
 ```bash
 # 评估单个模型
 python training/evaluate.py --model runs/gesture/exp1/weights/best.pt
 
-# 与基线模型对比
-python training/evaluate.py --model runs/gesture/exp1/weights/best.pt --baseline yolov8s.pt
+# 与基线对比
+python training/evaluate.py --model best.pt --baseline yolov8s.pt
 
-# 汇总所有实验结果
-python training/compare.py
-
-# 导出对比 CSV
+# 汇总所有实验
 python training/compare.py --output results.csv
 ```
 
-#### 14.4 部署微调后的模型
+### 其他工具
 
-训练完成后，`best.pt` 会自动复制到 `backend/weights/`。更新 `backend/core/config.py` 中的 `model_path` 即可使用。
+```bash
+# 数据集质量校验
+python training/validate_dataset.py --data-root datasets/RPS
 
----
+# 推理基准测试
+python training/benchmark.py --models best-yolov8n.pt best-yolov5nu.pt
 
-### 15. 适合继续扩展的方向
+# ONNX 导出
+python training/export_onnx.py --model best.pt
+```
 
-- 完整文件夹批处理
-- 视频结果可视化回放
-- 模型元信息展示
-- 用户头像入口前端化
-- 更细粒度的权限和用户管理
-- 任务持久化与队列化
+### 部署训练好的模型
 
----
+训练完成后 `best.pt` 自动复制到 `backend/weights/`。通过前端模型管理面板或修改 `.env` 中的 `MODEL_PATH` 即可切换。
 
-### 15. 许可证
+## 开发命令
+
+| 命令 | 说明 |
+|---|---|
+| `make setup` | 安装前后端全部依赖 |
+| `make backend` | 启动后端（带热重载） |
+| `make frontend` | 启动前端开发服务器 |
+| `make dev` | 同时启动前后端（`start.sh`） |
+| `make build` | 构建前端生产包 |
+| `make lint` | 运行 Ruff + ESLint |
+| `make test` | 运行后端单元/集成测试 |
+| `make test-quality` | 运行模型质量门禁测试 |
+| `make mlflow` | 启动 MLflow 跟踪服务 |
+| `make validate-data` | 运行数据集质量检查 |
+| `make verify` | 轻量级本地校验 |
+| `make clean` | 清理构建产物 |
+
+## CI/CD
+
+GitHub Actions 自动运行（`.github/workflows/ci.yml`）：
+
+1. **Lint** — `ruff check backend/ training/` + `npm run lint`
+2. **Test** — `pytest backend/tests/`（排除模型质量门禁）
+3. **Docker Build** — `docker compose build`
+
+## 已知限制
+
+- `Folder` 功能当前只处理选中的第一张图片，非完整批处理
+- 视频任务状态保存在内存中，服务重启后丢失
+- CSV 导出仅支持视频检测结果
+
+## License
 
 本项目仅用于个人学习与研究。
-
----
-
-## English Guide
-
-### 1. Overview
-
-This repository contains a **web-based hand gesture recognition system** built with **YOLO, FastAPI, and React**. 
-
-The system currently supports:
-
-- User registration and login
-- JWT-based authentication
-- Password change
-- Image detection
-- Video detection
-- Real-time webcam detection through WebSocket
-- Model upload and model switching
-- CSV export for video results
-- Frontend language switching
-
-Architecture:
-
-- Backend: FastAPI for auth, inference, export, and WebSocket handling
-- Frontend: React + TypeScript + Vite for UI and interaction
-- Model runtime: YOLO `.pt` weights
-- Database: SQLite
-
----
-
-### 2. Features
-
-#### 2.1 Implemented
-
-- Register / login flow
-- JWT auth
-- Change password
-- Detect from uploaded images
-- Detect from uploaded videos
-- Real-time webcam inference
-- Select an existing model
-- Upload a new `.pt` model and switch to it
-- Export video results as CSV
-- Bundled i18n resources for Chinese / English / Japanese
-
-#### 2.2 Current frontend entry points
-
-- Sidebar:
-  - `Camera`
-  - `Image`
-  - `Video`
-  - `Folder`
-  - `Model`
-  - `Change Password`
-  - User logout
-- Top bar:
-  - Language switch
-  - `Export CSV`
-
-#### 2.3 Current behavior notes
-
-- `Export CSV` is only meaningful for video tasks
-- `Model` opens the model dialog for listing, switching, and uploading models
-- `Folder` currently processes only the first selected image, not full batch processing
-- If model list loading fails after code changes, restart the backend process first
-
----
-
-### 3. Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, TypeScript, Vite |
-| State | Zustand |
-| Backend | FastAPI, Uvicorn |
-| Auth | JWT, bcrypt / passlib |
-| Database | SQLite, SQLAlchemy async, aiosqlite |
-| Vision | Ultralytics YOLO, OpenCV, PyTorch |
-| Real-time | WebSocket |
-| i18n | react-i18next |
-
----
-
-### 4. Project Structure
-
-```text
-.
-├── backend/                  # FastAPI backend
-│   ├── core/                 # config, database, dependencies, security
-│   ├── models/               # Pydantic schemas / SQLAlchemy model
-│   ├── routers/              # auth / detection / websocket routers
-│   ├── services/             # YOLO and export services
-│   ├── weights/              # default model weights
-│   ├── app.db                # SQLite database
-│   └── requirements.txt
-│
-├── frontend/                 # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── i18n/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── types/
-│   │   └── utils/
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── training/                 # ML training pipeline
-│   ├── train.py              # Fine-tuning script
-│   ├── evaluate.py           # Model evaluation script
-│   ├── compare.py            # Experiment comparison script
-│   ├── dataset.yaml          # Dataset configuration
-│   └── configs/              # Experiment hyperparameter configs
-│
-├── ultralytics/              # YOLO-related code kept in the repo
-├── weights/                  # extra local model weights
-├── Makefile                  # common project commands
-└── start.sh                  # one-command startup script
-```
-
----
-
-### 5. Requirements
-
-- Python 3.9+
-- Node.js 18+
-- A local virtual environment at `./venv`
-- Installed frontend dependencies
-- At least one available model weight file:
-  - `backend/weights/*.pt`
-
----
-
-### 6. Quick Start
-
-#### 6.1 Environment setup
-
-```bash
-python3 -m venv venv
-./venv/bin/pip install -r backend/requirements.txt
-cd frontend && npm install
-```
-
-#### 6.2 Using Makefile
-
-```bash
-make setup
-make backend
-make frontend
-make dev
-make build
-make lint
-make verify
-make clean
-```
-
-#### 6.3 Start everything
-
-```bash
-./start.sh
-```
-
-or:
-
-```bash
-make dev
-```
-
-Default local endpoints:
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8000`
-- API docs: `http://localhost:8000/docs`
-
----
-
-### 7. Command Reference
-
-| Command | Description |
-|---|---|
-| `make setup` | Install backend and frontend dependencies |
-| `make setup-backend` | Install backend dependencies into `venv` |
-| `make setup-frontend` | Install frontend dependencies |
-| `make backend` | Run FastAPI with `--reload` |
-| `make frontend` | Run the Vite dev server |
-| `make dev` | Start backend and frontend together |
-| `make build` | Build the frontend production bundle |
-| `make lint-backend` | Run backend Ruff (`backend/` + `training/`) |
-| `make lint-frontend` | Run frontend ESLint |
-| `make lint` | Run backend Ruff + frontend ESLint |
-| `make verify` | Run lightweight checks |
-| `make clean` | Remove common generated files |
-
----
-
-### 8. Backend Notes
-
-#### 8.1 Entry point
-
-- `backend/main.py`
-
-#### 8.2 Core modules
-
-- `backend/core/config.py`
-  - app settings
-  - default model path
-  - default thresholds
-  - database path
-- `backend/core/database.py`
-  - SQLAlchemy async engine / session
-  - DB initialization
-- `backend/core/security.py`
-  - JWT encode / decode
-  - password hashing and verification
-- `backend/core/dependencies.py`
-  - `get_current_user`
-
-#### 8.3 Services
-
-- `backend/services/yolo_service.py`
-  - singleton YOLO service
-  - model loading
-  - inference
-  - bilingual gesture label mapping (`en/zh`) and display class names
-- `backend/services/export_service.py`
-  - save annotated images
-  - export CSV results
-
-#### 8.4 Runtime data
-
-The app typically uses or generates:
-
-- `backend/app.db`
-- `backend/static/uploads/`
-- `backend/static/exports/`
-- `backend/static/avatars/`
-
----
-
-### 9. Frontend Notes
-
-#### 9.1 Pages
-
-- `frontend/src/pages/LoginPage.tsx`
-  - login / registration
-- `frontend/src/pages/MainPage.tsx`
-  - main detection page
-  - image / video / webcam / model entry points
-  - model selection dialog
-  - CSV export
-
-#### 9.2 Key components
-
-- `frontend/src/components/layout/Sidebar.tsx`
-  - left action menu
-  - change password dialog
-- `frontend/src/components/layout/TitleBar.tsx`
-  - language switch
-  - CSV export
-- `frontend/src/components/detection/*`
-  - canvas, progress bar, results table, detection info
-
-#### 9.3 State and connectivity
-
-- `frontend/src/hooks/useAuth.ts`
-- `frontend/src/hooks/useDetection.ts`
-- `frontend/src/hooks/useCamera.ts`
-- `frontend/src/hooks/useWebSocket.ts`
-
----
-
-### 10. API Reference
-
-#### 10.1 Health
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/health` | Check service and model status |
-
-#### 10.2 Auth
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/auth/register` | Register a new user |
-| `POST` | `/api/auth/login` | Login |
-| `GET` | `/api/auth/me` | Current user info |
-| `PUT` | `/api/auth/change-password` | Change password |
-| `POST` | `/api/auth/avatar` | Upload avatar |
-| `DELETE` | `/api/auth/account` | Delete account |
-
-#### 10.3 Detection
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/detect/image` | Detect from an image |
-| `POST` | `/api/detect/video` | Upload and process a video asynchronously |
-| `GET` | `/api/detect/video/{task_id}/status` | Query video task progress |
-| `GET` | `/api/detect/video/{task_id}/results` | Get video detection results |
-| `GET` | `/api/detect/export/csv/{task_id}` | Export video results as CSV |
-
-#### 10.4 Model management
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/detect/model/list` | List available models |
-| `POST` | `/api/detect/model/select` | Switch the current model |
-| `POST` | `/api/detect/model/upload` | Upload and load a new model |
-| `GET` | `/api/detect/model/classes` | Get display class names from the current model (currently Chinese) |
-
-#### 10.5 WebSocket
-
-| Protocol | Path | Description |
-|---|---|---|
-| `WS` | `/ws/detect?token=JWT` | Real-time webcam detection |
-
-Message contract:
-
-- Client -> Server
-  - binary JPEG frames
-  - config message: `{"type":"config","conf":0.35,"iou":0.45}`
-- Server -> Client
-  - `{"detections":[...],"inference_time":0.034,"frame_id":42}`
-
----
-
-### 11. Model Notes
-
-The default configuration is defined in:
-
-- `backend/core/config.py`
-
-Current default path:
-
-```python
-model_path = "weights/best-yolov8n.pt"
-```
-
-The project supports:
-
-- switching between existing `.pt` files
-- uploading a new `.pt` model
-- auto-loading the default model at startup
-
-Typical model locations:
-
-- `backend/weights/`
-- `weights/`
-
-#### 11.1 Gesture Labels
-
-`backend/services/yolo_service.py` defines fixed gesture keys with bilingual labels:
-
-| Key | English | Chinese |
-|---|---|---|
-| `Stop` | `Stop` | `停止` |
-| `Understand` | `Understand` | `了解` |
-| `NumberTwo` | `Number Two` | `数字2` |
-
-Current behavior:
-
-- `detect` response uses Chinese display labels in `class_name`.
-- `GET /api/detect/model/classes` returns the current model display labels in Chinese.
-
----
-
-### 12. Configuration
-
-The backend uses `Settings` for core configuration values, including:
-
-- `secret_key`
-- `algorithm`
-- `access_token_expire_minutes`
-- `model_path`
-- `device`
-- `default_conf`
-- `default_iou`
-- `image_size`
-- `database_url`
-- `upload_dir`
-- `export_dir`
-- `avatar_dir`
-- `max_upload_size`
-
-Use `.env` if you need to override defaults.
-
----
-
-### 13. Known Limitations
-
-- `Folder` is not full batch inference yet; it only processes the first selected image
-- Video task state is stored in memory and does not survive server restarts
-- The current export button only supports video-result CSV export
-- Model listing and switching require the backend to be restarted after route changes
-
----
-
-### 14. Training Pipeline (MLE)
-
-The project includes a full fine-tuning, evaluation, and comparison workflow in `training/`.
-
-#### 14.1 Prepare dataset
-
-1. Annotate images in YOLO format (one `.txt` per image, each line: `class_id cx cy w h`)
-2. Split into train/val directories
-3. Update `training/dataset.yaml` with your dataset path and class names
-
-#### 14.2 Fine-tune
-
-```bash
-# Default config (yolov8s, freeze backbone)
-python training/train.py
-
-# Use a preset experiment config
-python training/train.py --config training/configs/finetune_v8s.yaml
-
-# Custom parameters
-python training/train.py --model yolov8m.pt --epochs 200 --freeze 0 --lr0 0.0005
-```
-
-Available presets:
-
-| Config | Strategy | When to use |
-|--------|----------|-------------|
-| `finetune_v8s.yaml` | v8s + frozen backbone | Recommended starting point |
-| `finetune_v8m.yaml` | v8m + frozen backbone | Higher accuracy |
-| `finetune_v8s_fullunfreeze.yaml` | v8s + all layers | When you have enough data |
-
-#### 14.3 Evaluate and compare
-
-```bash
-# Evaluate a single model
-python training/evaluate.py --model runs/gesture/exp1/weights/best.pt
-
-# Compare against baseline
-python training/evaluate.py --model runs/gesture/exp1/weights/best.pt --baseline yolov8s.pt
-
-# Summarize all experiments
-python training/compare.py
-
-# Export comparison CSV
-python training/compare.py --output results.csv
-```
-
-#### 14.4 Deploy
-
-After training, `best.pt` is automatically copied to `backend/weights/`. Update `model_path` in `backend/core/config.py` to use it.
-
----
-
-### 15. Good Next Steps
-
-- full folder batch processing
-- video playback with result overlays
-- model metadata display
-- frontend avatar management
-- more complete user management
-- persistent task storage / queueing
-
----
-
-### 15. License
-
-This project is for personal learning and research purposes only.
