@@ -13,9 +13,9 @@ router = APIRouter()
 
 @router.websocket("/ws/detect")
 async def websocket_detect(websocket: WebSocket, token: str = Query(...)):
-    # Verify JWT
     payload = decode_access_token(token)
     if payload is None:
+        await websocket.accept()
         await websocket.close(code=4001, reason="Invalid token")
         return
 
@@ -29,11 +29,15 @@ async def websocket_detect(websocket: WebSocket, token: str = Query(...)):
     try:
         while True:
             message = await websocket.receive()
+            message_type = message.get("type")
+            if message_type == "websocket.disconnect":
+                break
 
             # Text message = config update
-            if "text" in message:
+            text = message.get("text")
+            if text is not None:
                 try:
-                    data = json.loads(message["text"])
+                    data = json.loads(text)
                     if data.get("type") == "config":
                         conf = float(data.get("conf", conf))
                         iou = float(data.get("iou", iou))
@@ -43,8 +47,8 @@ async def websocket_detect(websocket: WebSocket, token: str = Query(...)):
                 continue
 
             # Binary message = JPEG frame
-            if "bytes" in message:
-                jpeg_bytes = message["bytes"]
+            jpeg_bytes = message.get("bytes")
+            if jpeg_bytes:
                 nparr = np.frombuffer(jpeg_bytes, np.uint8)
                 image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                 if image is None:
@@ -62,5 +66,5 @@ async def websocket_detect(websocket: WebSocket, token: str = Query(...)):
                     "frame_id": frame_id,
                 })
 
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, RuntimeError):
         pass

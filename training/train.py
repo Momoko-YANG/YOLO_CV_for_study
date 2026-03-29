@@ -16,6 +16,7 @@ Usage:
 """
 
 import argparse
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -75,6 +76,10 @@ def parse_args():
     parser.add_argument("--config", type=str, default="",
                         help="Path to experiment config yaml (overrides CLI args)")
 
+    # MLflow
+    parser.add_argument("--mlflow", action="store_true", default=False,
+                        help="Enable MLflow experiment tracking")
+
     return parser.parse_args()
 
 
@@ -104,6 +109,27 @@ def train(args):
     print(f"  Freeze:      first {args.freeze} layers")
     print(f"  LR:          {args.lr0}")
     print(f"{'='*60}\n")
+
+    # --- MLflow 实验追踪（可选） ---
+    mlflow_run = None
+    if args.mlflow:
+        try:
+            import mlflow
+            tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000")
+            mlflow.set_tracking_uri(tracking_uri)
+            mlflow.set_experiment("hand-gesture-yolo")
+            mlflow_run = mlflow.start_run(run_name=build_experiment_name(args))
+            mlflow.log_params({
+                "model": args.model, "epochs": args.epochs, "batch": args.batch,
+                "imgsz": args.imgsz, "freeze": args.freeze, "lr0": args.lr0,
+                "optimizer": args.optimizer, "patience": args.patience,
+            })
+            if args.config:
+                mlflow.log_artifact(args.config)
+            print("  MLflow tracking: enabled")
+        except Exception as e:
+            print(f"  MLflow tracking: disabled ({e})")
+            mlflow_run = None
 
     model = YOLO(args.model)
 
@@ -164,6 +190,32 @@ def train(args):
         shutil.copy2(best_weight, dest)
         print(f"  Deployed to: {dest}")
         print(f"  Update backend/core/config.py model_path to use this weight.\n")
+
+    # --- MLflow: 记录训练结果 ---
+    if mlflow_run is not None:
+        try:
+            import mlflow
+            metrics_dict = {
+                "mAP50": float(results.results_dict.get("metrics/mAP50(B)", 0)),
+                "mAP50-95": float(results.results_dict.get("metrics/mAP50-95(B)", 0)),
+                "precision": float(results.results_dict.get("metrics/precision(B)", 0)),
+                "recall": float(results.results_dict.get("metrics/recall(B)", 0)),
+            }
+            mlflow.log_metrics(metrics_dict)
+            if best_weight.exists():
+                mlflow.log_artifact(str(best_weight))
+            results_dir = Path(args.project) / build_experiment_name(args)
+            for plot_file in results_dir.glob("*.png"):
+                mlflow.log_artifact(str(plot_file))
+            mlflow.end_run()
+            print("  MLflow: results logged successfully")
+        except Exception as e:
+            print(f"  MLflow: logging failed ({e})")
+            try:
+                import mlflow
+                mlflow.end_run(status="FAILED")
+            except Exception:
+                pass
 
     return results
 

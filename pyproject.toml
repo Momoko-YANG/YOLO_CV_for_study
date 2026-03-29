@@ -1,0 +1,15 @@
+[project]
+name = "yolo-hand-gesture"
+version = "1.0.0"
+requires-python = ">=3.9"
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+asyncio_mode = "auto"
+markers = [
+    "model_quality: tests that require a trained model weight file",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"

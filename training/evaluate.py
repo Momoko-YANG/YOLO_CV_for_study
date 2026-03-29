@@ -16,6 +16,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -46,6 +47,8 @@ def parse_args():
                         help="Baseline model to compare against")
     parser.add_argument("--save-dir", type=str, default="runs/evaluate",
                         help="Directory to save evaluation results")
+    parser.add_argument("--mlflow", action="store_true", default=False,
+                        help="Log results to MLflow")
     return parser.parse_args()
 
 
@@ -168,6 +171,26 @@ def main():
     results = evaluate_model(args.model, args)
     print_results(results)
     save_results(results, args.save_dir)
+
+    # --- MLflow: 记录评估结果 ---
+    if args.mlflow:
+        try:
+            import mlflow
+            tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000")
+            mlflow.set_tracking_uri(tracking_uri)
+            mlflow.set_experiment("hand-gesture-yolo")
+            with mlflow.start_run(run_name=f"eval_{Path(args.model).stem}"):
+                mlflow.set_tag("task", "evaluation")
+                mlflow.log_params({"model": args.model, "split": args.split, "conf": args.conf, "iou": args.iou})
+                mlflow.log_metrics({
+                    "mAP50": results["mAP50"], "mAP50-95": results["mAP50-95"],
+                    "precision": results["precision"], "recall": results["recall"],
+                })
+                for cls_name, cls_m in results.get("per_class", {}).items():
+                    mlflow.log_metric(f"AP50_{cls_name}", cls_m["AP50"])
+            print("  MLflow: evaluation logged")
+        except Exception as e:
+            print(f"  MLflow: disabled ({e})")
 
     # Compare with baseline if provided
     if args.baseline:

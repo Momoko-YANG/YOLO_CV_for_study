@@ -10,6 +10,8 @@ interface WSState {
 
 export function useWebSocket(token: string | null) {
   const wsRef = useRef<WebSocket | null>(null)
+  const reconnectTimerRef = useRef<number | null>(null)
+  const inFlightRef = useRef(false)
   const [state, setState] = useState<WSState>({
     detections: [],
     inferenceTime: 0,
@@ -24,12 +26,16 @@ export function useWebSocket(token: string | null) {
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws/detect?token=${token}`)
     wsRef.current = ws
 
-    ws.onopen = () => setState((s) => ({ ...s, isConnected: true }))
+    ws.onopen = () => {
+      inFlightRef.current = false
+      setState((s) => ({ ...s, isConnected: true }))
+    }
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data)
         if (data.detections !== undefined) {
+          inFlightRef.current = false
           setState({
             detections: data.detections,
             inferenceTime: data.inference_time,
@@ -42,23 +48,36 @@ export function useWebSocket(token: string | null) {
       }
     }
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
+      inFlightRef.current = false
+      wsRef.current = null
       setState((s) => ({ ...s, isConnected: false }))
-      // Auto-reconnect after 2s
-      setTimeout(() => connect(), 2000)
+      if (event.code === 4001) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+        return
+      }
+      reconnectTimerRef.current = window.setTimeout(() => connect(), 2000)
     }
 
     ws.onerror = () => ws.close()
   }, [token])
 
   const disconnect = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current)
+      reconnectTimerRef.current = null
+    }
     wsRef.current?.close()
     wsRef.current = null
+    inFlightRef.current = false
     setState((s) => ({ ...s, isConnected: false }))
   }, [])
 
   const sendFrame = useCallback((blob: Blob) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && !inFlightRef.current) {
+      inFlightRef.current = true
       blob.arrayBuffer().then((buf) => wsRef.current?.send(buf))
     }
   }, [])
@@ -71,6 +90,9 @@ export function useWebSocket(token: string | null) {
 
   useEffect(() => {
     return () => {
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current)
+      }
       wsRef.current?.close()
     }
   }, [])

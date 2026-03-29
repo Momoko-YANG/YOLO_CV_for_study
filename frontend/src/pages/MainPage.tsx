@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Sidebar from '../components/layout/Sidebar'
 import TitleBar from '../components/layout/TitleBar'
@@ -48,10 +48,12 @@ export default function MainPage() {
 
   // Sync WS detections to store
   const prevFrameId = useRef(0)
-  if (ws.frameId !== prevFrameId.current) {
-    prevFrameId.current = ws.frameId
-    store.setDetections(ws.detections, ws.inferenceTime)
-  }
+  useEffect(() => {
+    if (ws.frameId !== prevFrameId.current) {
+      prevFrameId.current = ws.frameId
+      store.setDetections(ws.detections, ws.inferenceTime)
+    }
+  }, [ws.frameId, ws.detections, ws.inferenceTime, store])
 
   // Send config when sliders change
   const handleConfChange = useCallback((v: number) => {

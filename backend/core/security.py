@@ -7,6 +7,10 @@ from passlib.context import CryptContext
 from core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+LEGACY_SECRET_KEYS = (
+    "gesture-recognition-secret-key-change-in-production",
+    "dev-only-gesture-recognition-secret-key-NOT-FOR-PRODUCTION",
+)
 
 
 def hash_password(password: str) -> str:
@@ -27,8 +31,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def decode_access_token(token: str) -> Optional[dict]:
-    try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        return payload
-    except JWTError:
-        return None
+    candidate_keys = [settings.secret_key]
+    candidate_keys.extend(k for k in LEGACY_SECRET_KEYS if k != settings.secret_key)
+
+    for secret in candidate_keys:
+        try:
+            return jwt.decode(token, secret, algorithms=[settings.algorithm])
+        except JWTError:
+            continue
+    return None

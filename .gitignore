@@ -24,6 +24,9 @@ htmlcov/
 venv/
 .venv/
 
+# Vendored packages (use pip install instead)
+ultralytics/
+
 # Frontend dependencies and build output
 node_modules/
 frontend/node_modules/
@@ -39,9 +42,11 @@ frontend/.vite/
 datasets/
 runs/
 
-# Model weights
+# Model weights and exports
 weights/*.pt
 backend/weights/*.pt
+backend/weights/*.onnx
+*.onnx
 
 # Application runtime data
 *.db
@@ -50,11 +55,22 @@ backend/weights/*.pt
 backend/static/
 backend/uploads/
 backend/exports/
+static/
+
+# Test media
+test_media/
 
 # Generated media
 *.avi
 *.mp4
 *.mov
+
+# MLflow
+mlruns/
+mlflow/
+
+# Jupyter
+.ipynb_checkpoints/
 
 # Generic cache and logs
 *.cache

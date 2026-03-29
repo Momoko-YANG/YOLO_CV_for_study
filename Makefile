@@ -17,7 +17,8 @@ FRONTEND_PORT ?= 5173
 .DEFAULT_GOAL := help
 
 .PHONY: help install setup setup-backend setup-frontend backend frontend dev \
-	build build-frontend lint lint-frontend verify clean
+	build build-frontend lint lint-frontend lint-backend verify clean \
+	test test-quality mlflow validate-data
 
 help:
 	@echo "Available targets:"
@@ -28,7 +29,12 @@ help:
 	@echo "  make frontend        Run Vite frontend dev server"
 	@echo "  make dev             Start backend and frontend together"
 	@echo "  make build           Build the frontend production bundle"
-	@echo "  make lint            Run frontend lint"
+	@echo "  make lint            Run all linters"
+	@echo "  make lint-backend    Run Python linter (ruff)"
+	@echo "  make test            Run backend unit/integration tests"
+	@echo "  make test-quality    Run model quality gate tests"
+	@echo "  make mlflow          Start MLflow tracking server"
+	@echo "  make validate-data   Run dataset quality checks"
 	@echo "  make verify          Run lightweight local checks"
 	@echo "  make clean           Remove common generated files"
 
@@ -60,10 +66,26 @@ build: build-frontend
 build-frontend:
 	cd $(FRONTEND_DIR) && $(NPM) run build
 
-lint: lint-frontend
+lint: lint-backend lint-frontend
+
+lint-backend:
+	"$(VENV_PYTHON)" -m ruff check $(BACKEND_DIR)/ $(PROJECT_DIR)/training/
 
 lint-frontend:
 	cd $(FRONTEND_DIR) && $(NPM) run lint
+
+test:
+	PYTHONPATH=$(BACKEND_DIR) "$(VENV_PYTHON)" -m pytest $(BACKEND_DIR)/tests/ -v -m "not model_quality"
+
+test-quality:
+	cd $(BACKEND_DIR) && PYTHONPATH=$(BACKEND_DIR) "$(VENV_PYTHON)" -m pytest tests/ -v -m model_quality
+
+mlflow:
+	docker compose up mlflow -d
+	@echo "MLflow UI: http://localhost:5000"
+
+validate-data:
+	"$(VENV_PYTHON)" training/validate_dataset.py --data-root datasets/RPS
 
 verify:
 	bash -n ./start.sh

@@ -12,7 +12,7 @@ from services import YOLOService
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: init DB and load YOLO model
+    print(f"Environment: {settings.app_env} | Debug: {settings.debug} | Device: {settings.device}")
     await init_db()
     yolo = YOLOService.get_instance()
     if os.path.exists(settings.model_path):
@@ -25,12 +25,17 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Gesture Recognition API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(
+    title="Gesture Recognition API",
+    version="1.0.0",
+    lifespan=lifespan,
+    docs_url="/docs" if settings.app_env != "prod" else None,
+    redoc_url="/redoc" if settings.app_env != "prod" else None,
+)
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
