@@ -23,7 +23,7 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from ultralytics import YOLO
+from ultralytics import YOLO  # noqa: E402
 
 
 def parse_args():
@@ -86,7 +86,7 @@ def main():
     results = []
 
     print(f"\n{'='*70}")
-    print(f"  Inference Benchmark")
+    print("  Inference Benchmark")
     print(f"  Models:     {len(args.models)}")
     print(f"  Iterations: {args.warmup} warmup + {args.iterations} timed")
     print(f"  Image size: {args.imgsz}")
@@ -116,7 +116,7 @@ def main():
 
     # --- Print comparison table ---
     print(f"\n{'='*70}")
-    print(f"  Results")
+    print("  Results")
     print(f"{'='*70}")
 
     header_cols = ["Model", "Format", "Size(MB)", "Mean(ms)", "P95(ms)", "FPS"]

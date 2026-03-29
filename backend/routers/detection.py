@@ -1,6 +1,5 @@
 import asyncio
 import os
-import time
 import uuid
 from typing import Dict, List
 
@@ -11,7 +10,6 @@ from fastapi.responses import FileResponse
 
 from core import get_current_user, settings
 from models import (
-    DetectionResult,
     ImageDetectionResponse,
     ModelInfo,
     ModelListResponse,

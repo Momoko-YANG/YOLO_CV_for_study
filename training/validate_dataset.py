@@ -18,7 +18,6 @@ from collections import Counter
 from pathlib import Path
 
 import cv2
-import numpy as np
 
 
 def parse_args():
@@ -235,7 +234,7 @@ def main():
     report = {"data_root": str(data_root), "splits": {}}
 
     print(f"\n{'='*60}")
-    print(f"  Dataset Quality Validation")
+    print("  Dataset Quality Validation")
     print(f"  Root: {data_root}")
     print(f"{'='*60}")
 

@@ -3,7 +3,6 @@ import os
 import time
 from typing import List, Optional, Tuple
 
-import cv2
 import numpy as np
 
 from core import settings

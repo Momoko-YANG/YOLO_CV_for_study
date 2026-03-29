@@ -1,5 +1,4 @@
 import json
-import time
 
 import cv2
 import numpy as np
@@ -56,7 +55,6 @@ async def websocket_detect(websocket: WebSocket, token: str = Query(...)):
 
                 image = cv2.resize(image, (settings.image_size, settings.image_size))
 
-                start = time.time()
                 detections, inference_time = yolo.detect(image, conf=conf, iou=iou)
 
                 frame_id += 1

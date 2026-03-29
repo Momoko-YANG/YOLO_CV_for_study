@@ -25,7 +25,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from ultralytics import YOLO
+from ultralytics import YOLO  # noqa: E402
 
 
 def parse_args():
@@ -177,7 +177,7 @@ def train(args):
     # Print results summary
     best_weight = Path(args.project) / build_experiment_name(args) / "weights" / "best.pt"
     print(f"\n{'='*60}")
-    print(f"  Training complete!")
+    print("  Training complete!")
     print(f"  Best weights: {best_weight}")
     print(f"{'='*60}\n")
 
@@ -189,7 +189,7 @@ def train(args):
         dest = deploy_path / f"best-{Path(args.model).stem}-finetuned.pt"
         shutil.copy2(best_weight, dest)
         print(f"  Deployed to: {dest}")
-        print(f"  Update backend/core/config.py model_path to use this weight.\n")
+        print("  Update backend/core/config.py model_path to use this weight.\n")
 
     # --- MLflow: 记录训练结果 ---
     if mlflow_run is not None:

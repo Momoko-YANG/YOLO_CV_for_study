@@ -12,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from core.database import Base, get_db  # noqa: E402
-from core.security import create_access_token  # noqa: E402
 from models import DetectionResult  # noqa: E402
 from services.yolo_service import YOLOService  # noqa: E402
 

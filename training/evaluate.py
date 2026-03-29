@@ -24,7 +24,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from ultralytics import YOLO
+from ultralytics import YOLO  # noqa: E402
 
 
 def parse_args():
@@ -112,7 +112,7 @@ def print_results(results: dict):
     print(f"  Recall:     {results['recall']}")
 
     if results["per_class"]:
-        print(f"\n  Per-class AP@50:")
+        print("\n  Per-class AP@50:")
         for cls_name, cls_metrics in results["per_class"].items():
             print(f"    {cls_name:15s}  AP50={cls_metrics['AP50']:.4f}  AP50-95={cls_metrics['AP50-95']:.4f}")
 
@@ -136,7 +136,7 @@ def print_comparison(current: dict, baseline: dict):
 
     # Per-class comparison
     if current["per_class"] and baseline["per_class"]:
-        print(f"\n  Per-class AP@50:")
+        print("\n  Per-class AP@50:")
         all_classes = set(list(current["per_class"].keys()) + list(baseline["per_class"].keys()))
         for cls_name in sorted(all_classes):
             cur_ap = current["per_class"].get(cls_name, {}).get("AP50", 0)

@@ -21,7 +21,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from ultralytics import YOLO
+from ultralytics import YOLO  # noqa: E402
 
 
 def parse_args():
@@ -50,7 +50,7 @@ def parse_args():
 def export_onnx(args) -> Path:
     """Export model to ONNX using ultralytics API."""
     print(f"\n{'='*60}")
-    print(f"  ONNX Export")
+    print("  ONNX Export")
     print(f"  Model:    {args.model}")
     print(f"  Size:     {args.imgsz}")
     print(f"  Opset:    {args.opset}")
