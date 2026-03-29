@@ -190,7 +190,9 @@ make dev
 | `make frontend` | 启动 Vite 开发服务器 |
 | `make dev` | 同时启动前后端 |
 | `make build` | 构建前端生产包 |
-| `make lint` | 运行前端 ESLint |
+| `make lint-backend` | 运行后端 Ruff（`backend/` + `training/`） |
+| `make lint-frontend` | 运行前端 ESLint |
+| `make lint` | 运行后端 Ruff + 前端 ESLint |
 | `make verify` | 运行轻量校验 |
 | `make clean` | 清理常见构建产物 |
 
@@ -224,7 +226,7 @@ make dev
   - 单例 YOLO 服务
   - 加载模型
   - 执行检测
-  - 返回当前模型名和类别名
+  - 维护手势标签映射（`en/zh`）并返回类别显示名
 - `backend/services/export_service.py`
   - 保存带框图片
   - 导出 CSV
@@ -308,7 +310,7 @@ make dev
 | `GET` | `/api/detect/model/list` | 获取模型列表 |
 | `POST` | `/api/detect/model/select` | 切换当前模型 |
 | `POST` | `/api/detect/model/upload` | 上传并加载新模型 |
-| `GET` | `/api/detect/model/classes` | 获取当前模型类别 |
+| `GET` | `/api/detect/model/classes` | 获取当前模型类别显示名（当前默认返回中文） |
 
 #### 10.5 WebSocket
 
@@ -348,6 +350,21 @@ model_path = "weights/best-yolov8n.pt"
 
 - `backend/weights/`
 - `weights/`
+
+#### 11.1 手势标签映射（Gesture Labels）
+
+后端在 `backend/services/yolo_service.py` 维护固定手势键和双语标签：
+
+| Key | English | 中文 |
+|---|---|---|
+| `Stop` | `Stop` | `停止` |
+| `Understand` | `Understand` | `了解` |
+| `NumberTwo` | `Number Two` | `数字2` |
+
+当前行为：
+
+- `detect` 返回结果中的 `class_name` 为中文显示名。
+- `GET /api/detect/model/classes` 返回当前模型类别显示名（中文）。
 
 ---
 
@@ -637,7 +654,9 @@ Default local endpoints:
 | `make frontend` | Run the Vite dev server |
 | `make dev` | Start backend and frontend together |
 | `make build` | Build the frontend production bundle |
-| `make lint` | Run frontend ESLint |
+| `make lint-backend` | Run backend Ruff (`backend/` + `training/`) |
+| `make lint-frontend` | Run frontend ESLint |
+| `make lint` | Run backend Ruff + frontend ESLint |
 | `make verify` | Run lightweight checks |
 | `make clean` | Remove common generated files |
 
@@ -671,7 +690,7 @@ Default local endpoints:
   - singleton YOLO service
   - model loading
   - inference
-  - current model and class name access
+  - bilingual gesture label mapping (`en/zh`) and display class names
 - `backend/services/export_service.py`
   - save annotated images
   - export CSV results
@@ -755,7 +774,7 @@ The app typically uses or generates:
 | `GET` | `/api/detect/model/list` | List available models |
 | `POST` | `/api/detect/model/select` | Switch the current model |
 | `POST` | `/api/detect/model/upload` | Upload and load a new model |
-| `GET` | `/api/detect/model/classes` | Get classes from the current model |
+| `GET` | `/api/detect/model/classes` | Get display class names from the current model (currently Chinese) |
 
 #### 10.5 WebSocket
 
@@ -795,6 +814,21 @@ Typical model locations:
 
 - `backend/weights/`
 - `weights/`
+
+#### 11.1 Gesture Labels
+
+`backend/services/yolo_service.py` defines fixed gesture keys with bilingual labels:
+
+| Key | English | Chinese |
+|---|---|---|
+| `Stop` | `Stop` | `停止` |
+| `Understand` | `Understand` | `了解` |
+| `NumberTwo` | `Number Two` | `数字2` |
+
+Current behavior:
+
+- `detect` response uses Chinese display labels in `class_name`.
+- `GET /api/detect/model/classes` returns the current model display labels in Chinese.
 
 ---
 
