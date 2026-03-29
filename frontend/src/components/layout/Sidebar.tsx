@@ -13,6 +13,12 @@ interface SidebarProps {
   mode: string
 }
 
+function getErrorDetail(err: unknown): string | undefined {
+  if (typeof err !== 'object' || err === null || !('response' in err)) return undefined
+  const detail = (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
+  return typeof detail === 'string' ? detail : undefined
+}
+
 export default function Sidebar({ onCamera, onImage, onVideo, onFolder, onModel, mode }: SidebarProps) {
   const [expanded, setExpanded] = useState(true)
   const [showChangePassword, setShowChangePassword] = useState(false)
@@ -73,8 +79,8 @@ export default function Sidebar({ onCamera, onImage, onVideo, onFolder, onModel,
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || t('save_failed'))
+    } catch (err: unknown) {
+      setError(getErrorDetail(err) || t('save_failed'))
     } finally {
       setLoading(false)
     }

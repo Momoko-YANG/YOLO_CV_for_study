@@ -19,7 +19,7 @@ export function useWebSocket(token: string | null) {
     isConnected: false,
   })
 
-  const connect = useCallback(() => {
+  const connect = useCallback(function connectWebSocket() {
     if (!token || wsRef.current?.readyState === WebSocket.OPEN) return
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -58,7 +58,7 @@ export function useWebSocket(token: string | null) {
         window.location.href = '/login'
         return
       }
-      reconnectTimerRef.current = window.setTimeout(() => connect(), 2000)
+      reconnectTimerRef.current = window.setTimeout(() => connectWebSocket(), 2000)
     }
 
     ws.onerror = () => ws.close()

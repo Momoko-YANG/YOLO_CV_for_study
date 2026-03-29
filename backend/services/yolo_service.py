@@ -1,17 +1,17 @@
 import asyncio
 import os
 import time
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
 from core import settings
 from models import DetectionResult
 
-GESTURE_LABELS = {
-    "Stop": "Stop",
-    "Understand": "Understand",
-    "NumberTwo": "Number Two",
+GESTURE_LABELS: Dict[str, Dict[str, str]] = {
+    "Stop": {"en": "Stop", "zh": "停止"},
+    "Understand": {"en": "Understand", "zh": "了解"},
+    "NumberTwo": {"en": "Number Two", "zh": "数字2"},
 }
 
 
@@ -42,7 +42,10 @@ class YOLOService:
         self.model_path = model_path
 
         names_dict = self.model.names
-        self.names = [GESTURE_LABELS.get(v, v) for v in names_dict.values()]
+        self.names = []
+        for name in names_dict.values():
+            labels = GESTURE_LABELS.get(name)
+            self.names.append(labels["zh"] if labels else name)
 
         # Warmup
         self.model(

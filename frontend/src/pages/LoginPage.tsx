@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../hooks/useAuth'
 
+function getErrorDetail(err: unknown): string | undefined {
+  if (typeof err !== 'object' || err === null || !('response' in err)) return undefined
+  const detail = (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
+  return typeof detail === 'string' ? detail : undefined
+}
+
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
   const [username, setUsername] = useState('')
@@ -29,8 +35,8 @@ export default function LoginPage() {
         await register(username, password)
       }
       navigate('/')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error')
+    } catch (err: unknown) {
+      setError(getErrorDetail(err) || 'Error')
     } finally {
       setLoading(false)
     }
